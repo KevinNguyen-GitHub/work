@@ -3,8 +3,8 @@ from sqlalchemy.orm import relationship
 from orm_base import Base
 
 class Building(Base):
-    __tablename__ = "building"
-    buildingName = Column("building_name", String, nullalbe=False)
+    __tablename__ = "buildings"
+    name = Column("name", String, primary_key=True, nullalbe=False)
     
-    def __init__(self, buildingName: String):
-        self.buildingName = buildingName
+    def __init__(self, name: String):
+        self.name = name
