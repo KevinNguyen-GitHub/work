@@ -2,6 +2,7 @@ from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from orm_base import Base
 
+import KeyRequest from KeyRequest
 class Room(Base):
     __tablename__ = "rooms"
     num = Column("num", Integer, primary_key=True, nullable=False)
