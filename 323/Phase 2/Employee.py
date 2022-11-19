@@ -5,8 +5,9 @@ from orm_base import Base
 class Employee(Base):
     __tablename__ = "employee"
     name = Column("name", String(40), nullable=False)
-    employee_id = Column("employee_id", Integer, Identity(start=1, cycle=True),
+    id = Column("id", Integer, Identity(start=1, cycle=True),
                        nullable=False, primary_key=True))
     
-def _init_(self, name: String):
+def _init_(self, name: String, id: Integer):
     self.name = name
+    self.id = id
