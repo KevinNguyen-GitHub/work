@@ -3,8 +3,9 @@ from sqlalchemy.orm import relationship
 from orm_base import Base
 
 class Hook(Base):
-    __tablename__ = "hook"
-    hook = Column("hook", String(40), nullable=False)
+    __tablename__ = "hooks"
+    id = Column('id', Integer, Identity(start=1, cycle=True),
+                       nullable=False, primary_key=True)
     
-    def __init__(self, hook: String):
-        self.hook = hook
+    def __init__(self, id: Integer):
+        self.id = id
