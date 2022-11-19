@@ -16,6 +16,9 @@ class KeyRequest(Base):
     copy_keys_is_loss = Column(Boolean, ForeignKey('copy_keys.is_loss'), primary_key=True, nullable=False)
     
     #relationship
+    employee = relationship("Employee", back_populates= 'rooms_list')
+    room = relationship("Room", back_populates='employees_list')
+
     
     def __init__ (self, request_date: Date, employee, room, room, copy_key, copy_key):
         self.request_date = request_date
@@ -23,6 +26,6 @@ class KeyRequest(Base):
         self.rooms_num = room.rooms_num
         self.rooms_buildings_name = room.rooms_buildings_name 
         self.copy_keys_id = copy_key.copy_keys_id 
-        self.copy_key_is_loss = copy_key.copy_keys_iss_loss
+        self.copy_key_is_loss = copy_key.copy_keys_is_loss
         
         
