@@ -55,7 +55,7 @@ if __name__ == '__main__':
     kr1: KeyRequest = KeyRequest(request_id=1, request_date='2022-01-31', employee_id=1, room_number=243,
                                  room_buildings_name='ECS', copy_key_id=1, copy_key_is_loss=True)
     b1: Building = Building(name="ECS")
-    r1: Room = Room(num=243, building_name='ECS')
+    r1: Room = Room(num=243, buildings_name='ECS')
     d1: Door = Door(door_type_name='Front-Class', room_num=243, room_building_name='ECS')
     dt1: DoorType = DoorType(name='Front-Class')
     hl1: HookLine = HookLine(doors_door_type_name='Front-Class', doors_roon_num=243, doors_rooms_buildings_name='ECS',

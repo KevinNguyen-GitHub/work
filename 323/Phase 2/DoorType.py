@@ -7,8 +7,8 @@ from HookLine import HookLine
 
 class DoorType(Base):
     __tablename__ = "door_type"
-    name = Column("name", String(100), primary_key=True, nullable=False)
-    door = relationship("Door")
+    name = Column("name", String(100), nullable=False, primary_key=True)
+    door = relationship("Door", back_populates="door_type", viewonly=False)
 
     def __init__(self, name: String):
         self.name = name
