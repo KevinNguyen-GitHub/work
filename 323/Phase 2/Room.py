@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Date, Time, Boolean, Identity, ForeignKey
+from sqlalchemy import Column, String, Integer, Date, Time, Boolean, Identity, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from orm_base import Base
 from KeyRequest import KeyRequest
@@ -12,9 +12,11 @@ class Room(Base):
     door = relationship("Door")
     employees_list: [KeyRequest] = relationship("KeyRequest", back_populates="room", viewonly=False)
 
-    def __init__(self, num: Integer, building):
+    table_args = (UniqueConstraint('num', 'buildings_name', name='room_uk_01'))
+
+    def __init__(self, num: Integer, buildings_name):
         self.num = num
-        self.buildings_name = building.buildings_name
+        self.buildings_name = buildings_name
 
     def add_employee(self, employee):
         for next_employee in self.employees_list:
