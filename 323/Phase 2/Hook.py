@@ -7,7 +7,7 @@ class Hook(Base):
     __tablebname__ = "hooks"
     id = Column('id', Integer, Identity(start=1, cycle=True),
                 nullable=False, primary_key=True)
-    doors_list: [HookLine] = relationship("Unknown", back_populates="hook", viewonly=False)
+    doors_list: [HookLine] = relationship("Hooklist", back_populates="hook", viewonly=False)
     def __init__(self, id: Integer):
         self.id = id
         self.doors_list = []
@@ -18,7 +18,7 @@ class Hook(Base):
             if next_door == door:
                 return
         # Create an instance of the junction table class for this relationship.
-        hook_list = HookLine(door,self)
+        hook_list = HookLine(self,door)
         # Update this move to reflect that we have this genre now.
         door.hooks_list.append(hook_list)
         # Update the genre to reflect this movie.
