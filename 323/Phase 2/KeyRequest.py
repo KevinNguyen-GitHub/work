@@ -22,7 +22,7 @@ class KeyRequest(Base):
     room = relationship("Room", back_populates='employees_list')
 
     
-    def __init__ (self, request_date: Date, employee, room, room, copy_key, copy_key):
+    def __init__ (self, request_date: Date, employee, room, copy_key):
         self.request_date = request_date
         self.employee_id = employee.employee_id
         self.rooms_num = room.rooms_num
