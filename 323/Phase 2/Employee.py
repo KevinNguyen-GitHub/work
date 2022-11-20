@@ -11,7 +11,7 @@ class Employee(Base):
                 nullable=False, primary_key=True)
 
     rooms_list: [KeyRequest] = relationship("KeyRequest", back_populates="employee", viewonly=False)
-    request = relationship("KeyRequest", back_popultaes="eployess")
+    request = relationship("KeyRequest", back_populates="eployees")
     def __init__(self, name: String, id: Integer):
         self.name = name
         self.id = id

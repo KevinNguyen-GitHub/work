@@ -7,7 +7,7 @@ from DoorType import DoorType
 from HookLine import HookLine
 class Door(Base):
     __tablename__ = "doors"
-    door_type_name = Column('door_type_name',String(40), ForeignKey('door_type.name'), ce)
+    door_type_name = Column('door_type_name',String(40), ForeignKey('door_type.name'),)
     rooms_num = Column('rooms_num',Integer, ForeignKey('rooms.num'), nullable=False, primary_key=True)
     rooms_buildings_name = Column(String(50), ForeignKey('rooms.buildings_name'), nullable=False, primary_key=True)
     
