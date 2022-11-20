@@ -16,6 +16,7 @@ class Room(Base):
     def __init__(self, num: Integer, buildings_name):
         self.num = num
         self.buildings_name = buildings_name
+        self.emloyees_list = []
 
     # def add_employee(self, employee):
     #     for next_employee in self.employees_list:
