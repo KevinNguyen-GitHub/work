@@ -59,7 +59,7 @@ if __name__ == '__main__':
     d1: Door = Door(door_type_name='Front-Class', room_num=243, room_building_name='ECS')
     dt1: DoorType = DoorType(name='Front-Class')
     hl1: HookLine = HookLine(doors_door_type_name='Front-Class', doors_roon_num=243, doors_rooms_buildings_name='ECS',
-                             hooks_id = 1)
+                             hooks_id=1)
     h1: Hook = Hook(id=1)
 
 
