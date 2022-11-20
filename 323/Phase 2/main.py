@@ -50,7 +50,7 @@ if __name__ == '__main__':
     # those tables for us.
     metadata.create_all(bind=engine)
 
-    def printMainMenu():
+    def intro():
         print("Are you here to request a key?")
         print("0. View")
         print("1. Make A Request")
@@ -86,3 +86,24 @@ if __name__ == '__main__':
 
 
 
+    active = False
+    While not active:
+        try:
+            intro()
+            choice = int(input())
+            if (choice >= 0 and choice <= 2):
+                active = True
+            else:
+                print("Invalid range, please choose a number 0-2")
+        except ValueError:
+            print("Invalid input, please enter a number 0-2")
+
+        if (choice == 2):
+            print("Thank you for using our services.")
+            exit()
+        active = False
+
+        with Session() as sess:
+            if choice == 0:
+
+            elif choice == 1:
