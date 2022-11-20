@@ -9,9 +9,7 @@ class Room(Base):
     buildings_name = Column(String(50), ForeignKey('buildings.name'), primary_key=True, nullable=False)
     
     door = relationship("Door")
-    employees_list: [KeyRequest] = relationship("KeyRequest", back_populates="room", viewonly=False)
-    buildings_list:
-    
+    employees_list: [KeyRequest] = relationship("KeyRequest", back_populates="room", viewonly=False) 
     def __init__(self, num: Integer, building):
         self.num = num
         self.buildings_name = building.buildings_name
