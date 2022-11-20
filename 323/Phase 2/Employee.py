@@ -12,12 +12,12 @@ class Employee(Base):
                        
     rooms_list: [KeyRequest] = relationship("KeyRequest", back_populates="employee", viewonly=False)
     
-def _init_(self, name: String, id: Integer):
-    self.name = name
-    self.id = id
-    self.rooms_list = []
+    def _init_(self, name: String, id: Integer):
+        self.name = name
+        self.id = id
+        self.room_list = []
 
- def add_room(self, room):
+    def add_room(self, room):
         # make sure this genre is non already on the list.
         for next_room in self.rooms_list:
             if next_room == room:
