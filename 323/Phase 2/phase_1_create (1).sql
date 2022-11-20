@@ -1,5 +1,5 @@
 -- Created by Vertabelo (http://vertabelo.com)
--- Last modification date: 2022-11-20 00:26:49.094
+-- Last modification date: 2022-11-20 04:27:31.259
 
 -- tables
 -- Table: buildings
@@ -57,35 +57,31 @@ CREATE TABLE hooks (
 
 -- Table: key_requests
 CREATE TABLE key_requests (
-    request_date date  NOT NULL,
-    employees_id int  NOT NULL,
+    request_id int  NOT NULL,
     rooms_num int  NOT NULL,
     rooms_buildings_name varchar(50)  NOT NULL,
-    copy_keys__id int  NOT NULL,
+    employees_id int  NOT NULL,
+    request_date date  NOT NULL,
+    copy_keys_id int  NOT NULL,
     copy_keys_is_loss boolean  NOT NULL,
-    CONSTRAINT key_requests_pk PRIMARY KEY (employees_id,rooms_num,rooms_buildings_name,copy_keys__id,copy_keys_is_loss)
+    CONSTRAINT key_requests_uk_01 UNIQUE (rooms_num, copy_keys_id) NOT DEFERRABLE  INITIALLY IMMEDIATE,
+    CONSTRAINT key_requests_pk PRIMARY KEY (request_id)
 );
 
 -- Table: loss
 CREATE TABLE loss (
-    report_date date  NOT NULL,
-    key_requests_employees_id int  NOT NULL,
-    key_requests_rooms_num int  NOT NULL,
-    key_requests_rooms_buildings_name varchar(50)  NOT NULL,
-    key_requests_copy_keys__id int  NOT NULL,
-    key_requests_copy_keys_is_loss boolean  NOT NULL,
-    CONSTRAINT loss_pk PRIMARY KEY (report_date,key_requests_employees_id,key_requests_rooms_num,key_requests_rooms_buildings_name,key_requests_copy_keys__id,key_requests_copy_keys_is_loss)
+    loss_date date  NOT NULL,
+    key_requests_request_id int  NOT NULL,
+    loaned_date int  NOT NULL,
+    CONSTRAINT loss_pk PRIMARY KEY (key_requests_request_id)
 );
 
 -- Table: returns
 CREATE TABLE returns (
-    report_date date  NOT NULL,
-    key_requests_employees_id int  NOT NULL,
-    key_requests_rooms_num int  NOT NULL,
-    key_requests_rooms_buildings_name varchar(50)  NOT NULL,
-    key_requests_copy_keys__id int  NOT NULL,
-    key_requests_copy_keys_is_loss boolean  NOT NULL,
-    CONSTRAINT returns_pk PRIMARY KEY (report_date,key_requests_employees_id,key_requests_rooms_num,key_requests_rooms_buildings_name,key_requests_copy_keys__id,key_requests_copy_keys_is_loss)
+    return_date date  NOT NULL,
+    key_requests_request_id int  NOT NULL,
+    loaned_date int  NOT NULL,
+    CONSTRAINT returns_pk PRIMARY KEY (key_requests_request_id)
 );
 
 -- Table: rooms
@@ -149,7 +145,7 @@ ALTER TABLE hook_lines ADD CONSTRAINT hook_lines_hooks_fk_01
 
 -- Reference: key_requests_copy_keys_fk_01 (table: key_requests)
 ALTER TABLE key_requests ADD CONSTRAINT key_requests_copy_keys_fk_01
-    FOREIGN KEY (copy_keys__id, copy_keys_is_loss)
+    FOREIGN KEY (copy_keys_id, copy_keys_is_loss)
     REFERENCES copy_keys (id, is_loss)
     ON DELETE  RESTRICT 
     ON UPDATE  RESTRICT 
@@ -175,22 +171,18 @@ ALTER TABLE key_requests ADD CONSTRAINT key_requests_rooms_fk_01
     INITIALLY IMMEDIATE
 ;
 
--- Reference: loss_key_requests_fk_01 (table: loss)
-ALTER TABLE loss ADD CONSTRAINT loss_key_requests_fk_01
-    FOREIGN KEY (key_requests_employees_id, key_requests_rooms_num, key_requests_rooms_buildings_name, key_requests_copy_keys__id, key_requests_copy_keys_is_loss)
-    REFERENCES key_requests (employees_id, rooms_num, rooms_buildings_name, copy_keys__id, copy_keys_is_loss)
-    ON DELETE  RESTRICT 
-    ON UPDATE  RESTRICT 
+-- Reference: loss_key_requests (table: loss)
+ALTER TABLE loss ADD CONSTRAINT loss_key_requests
+    FOREIGN KEY (key_requests_request_id)
+    REFERENCES key_requests (request_id)  
     NOT DEFERRABLE 
     INITIALLY IMMEDIATE
 ;
 
--- Reference: returns_key_requests_fk_01 (table: returns)
-ALTER TABLE returns ADD CONSTRAINT returns_key_requests_fk_01
-    FOREIGN KEY (key_requests_employees_id, key_requests_rooms_num, key_requests_rooms_buildings_name, key_requests_copy_keys__id, key_requests_copy_keys_is_loss)
-    REFERENCES key_requests (employees_id, rooms_num, rooms_buildings_name, copy_keys__id, copy_keys_is_loss)
-    ON DELETE  RESTRICT 
-    ON UPDATE  RESTRICT 
+-- Reference: returns_key_requests (table: returns)
+ALTER TABLE returns ADD CONSTRAINT returns_key_requests
+    FOREIGN KEY (key_requests_request_id)
+    REFERENCES key_requests (request_id)  
     NOT DEFERRABLE 
     INITIALLY IMMEDIATE
 ;
