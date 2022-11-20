@@ -54,5 +54,10 @@ if __name__ == '__main__':
     # at the end of the with, much like what it would be like if you used a with to open a file.
     # This way, we do not have memory leaks.
     with Session() as sess:
+        sess.begin()
+        print("Inside the session...")
+        sess.commit()
+
+    print("Exiting normally.")
 
 
