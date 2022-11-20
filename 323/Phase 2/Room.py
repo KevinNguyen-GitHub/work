@@ -1,22 +1,22 @@
-from sqlalchemy import Column, String, Integer, Date, Time, Boolean, Identity, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from orm_base import Base
-from KeyRequest import KeyRequest
 
-
+from Building import Building
 class Room(Base):
     __tablename__ = "rooms"
-    num = Column("num", Integer, nullable=False, primary_key=True)
-    buildings_name = Column(String(50), ForeignKey('buildings.name'), nullable=False, primary_key=True)
+    number = Column("number", Integer, primary_key=True, nullable=False)
+    buildings_name = Column(String(50), ForeignKey('buildings.name'), primary_key=True, nullable=False)
+    
+    door = relationship("Door", back_populates="rooms",  viewonly=False)
+    requests = relationship("Requests", back_populates="rooms", viewonly=False)
+    buildings = relationship("Buildings", back_populates="rooms", viewonly=False)
 
-    table_args = (UniqueConstraint('buildings_name', name='rooms_uk_01'))
-    door = relationship("Door")
-    # employees_list: [KeyRequest] = relationship("KeyRequest", back_populates="room", viewonly=False)
 
-
-    def __init__(self, num: Integer, buildings_name):
-        self.num = num
-        self.buildings_name = buildings_name
+    
+    def __init__(self, number: Integer, building):
+        self.number = number
+        self.buildings_name = building.buildings_name
         self.emloyees_list = []
 
     # def add_employee(self, employee):
