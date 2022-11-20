@@ -10,9 +10,15 @@ class HookLine(Base):
     hooks_id = Column(Integer, Foreign('hooks.id'), primary_key=True, nullable=False)
     
     #relationship 
+    hook = relationship("Hook", back_populates='doors_list')
+    # movies_list is the name of the list of MovieGenre instances for the parent movie.
+    door = relationship("Door", back_populates='hooks_list')
     
     def __init__(self, door, hook):
         self.doors_door_type_name = door.doors_door_type_name
         self.doors_rooms_num = door.doors_rooms_num
         self.doors_rooms_buildings_name =door.doors_rooms_buildings_name 
         self.hooks_id = hook.hooks_id
+
+        self.hook = hook
+        self.door = hook
