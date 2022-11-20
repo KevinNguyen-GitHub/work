@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Date, Time, Boolean, Identity, ForeignKey
+from sqlalchemy import Column, String,Identity, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from orm_base import Base
 
@@ -11,20 +11,27 @@ class Employee(Base):
                        nullable=False, primary_key=True)
                        
     rooms_list: [KeyRequest] = relationship("KeyRequest", back_populates="employee", viewonly=False)
-    
-    def _init_(self, name: String, id: Integer):
+
+    def __init__(self, name: String, id: Integer):
         self.name = name
         self.id = id
-        self.room_list = []
+        self.rooms_list = []
 
     def add_room(self, room):
-        # make sure this genre is non already on the list.
+            # make sure this genre is non already on the list.
         for next_room in self.rooms_list:
             if next_room == room:
                 return
+
+    def make_request(self, request):
+        for r in self.employees_list:
+            if r == request:
+                print("Request already made previously.")
+                return
+
         # Create an instance of the junction table class for this relationship.
-        key_request = KeyRequest(self, room)
+        key_request = KeyRequest(self, request)
         # Update this move to reflect that we have this genre now.
-        room.employees_list.append(key_request)
+        request.employees_list.append(key_request)
         # Update the genre to reflect this movie.
         self.rooms_list.append(key_request)
