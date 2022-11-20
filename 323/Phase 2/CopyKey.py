@@ -2,6 +2,7 @@ from sqlalchemy import Column, String, Integer, Date, Time, Boolean, Identity, F
 from sqlalchemy.orm import relationship
 from orm_base import Base
 
+
 class CopyKey(Base):
     __tablename__ = "copy_keys"
     id = Column('id', Integer, Identity(start=1, cycle=True),
