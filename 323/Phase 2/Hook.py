@@ -7,6 +7,7 @@ class Hook(Base):
     __tablebname__ = "hooks"
     id = Column('id', Integer, Identity(start=1, cycle=True),
                 nullable=False, primary_key=True)
+    copy_key = relationship("CopyKey")
     doors_list: [HookLine] = relationship("Hooklist", back_populates="hook", viewonly=False)
     def __init__(self, id: Integer):
         self.id = id
