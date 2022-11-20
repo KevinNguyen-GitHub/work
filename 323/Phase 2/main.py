@@ -69,6 +69,14 @@ if __name__ == '__main__':
     with Session() as sess:
         sess.begin()
         print("Inside the session...")
+        sess.add(e1)
+        sess.add(kr1)
+        sess.add(b1)
+        sess.add(r1)
+        sess.add(d1)
+        sess.add(dt1)
+        sess.add(hl1)
+        sess.add(h1)
         sess.commit()
 
     print("Exiting normally.")
