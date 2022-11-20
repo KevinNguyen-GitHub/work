@@ -74,7 +74,6 @@ if __name__ == '__main__':
     # This way, we do not have memory leaks.
     with Session() as sess:
         sess.begin()
-        print("Inside the session...")
         sess.add(e1)
         sess.add(kr1)
         sess.add(b1)
@@ -85,6 +84,5 @@ if __name__ == '__main__':
         sess.add(h1)
         sess.commit()
 
-    print("Exiting normally.")
 
 
