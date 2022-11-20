@@ -9,6 +9,7 @@ class Room(Base):
     num = Column("num", Integer, nullable=False, primary_key=True)
     buildings_name = Column(String(50), ForeignKey('buildings.name'), nullable=False, primary_key=True)
 
+    table_args = (UniqueConstraint('buildings_name', name='rooms_uk_01'),)
     door = relationship("Door")
     # employees_list: [KeyRequest] = relationship("KeyRequest", back_populates="room", viewonly=False)
 
