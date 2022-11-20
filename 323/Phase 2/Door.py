@@ -8,11 +8,11 @@ from HookLine import HookLine
 class Door(Base):
     __tablename__ = "doors"
     door_type_name = Column('door_type_name',String(40), ForeignKey('door_type.name'), primary_key=True, nullable=False)
-    rooms_num = Column('room_num',Integer, ForeignKey('rooms.number'), primary_key=True, nullable=False)
+    rooms_num = Column('rooms_num',Integer, ForeignKey('rooms.num'), primary_key=True, nullable=False)
     rooms_buildings_name = Column(String(50), ForeignKey('rooms.buildings_name'), primary_key=True, nullable=False)
     
     #relationship
-    doortype= relationship("DoorType", back_populates="doors", viewonly=False)
+    doortype = relationship("DoorType", back_populates="doors", viewonly=False)
     hooks_list: [HookLine] = relationship("HookLine", back_populates="doors", viewonly=False)
     rooms = relationship("Room", back_populates="doors", viewonly=False)
     

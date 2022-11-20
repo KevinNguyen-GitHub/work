@@ -5,7 +5,7 @@ from orm_base import Base
 from Building import Building
 class Room(Base):
     __tablename__ = "rooms"
-    number = Column("number", Integer, primary_key=True, nullable=False)
+    num = Column("num", Integer, primary_key=True, nullable=False)
     buildings_name = Column(String(50), ForeignKey('buildings.name'), primary_key=True, nullable=False)
     
     door = relationship("Door", back_populates="rooms",  viewonly=False)
@@ -14,8 +14,8 @@ class Room(Base):
 
 
     
-    def __init__(self, number: Integer, building):
-        self.number = number
+    def __init__(self, num: Integer, building):
+        self.num = num
         self.buildings_name = building.buildings_name
         self.emloyees_list = []
 

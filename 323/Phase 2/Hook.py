@@ -5,7 +5,7 @@ from orm_base import Base
 from HookLine import HookLine
 
 class Hook(Base):
-    __tablebname__ = "hooks"
+    __tablename__ = "hooks"
     id = Column('id', Integer, Identity('hook_num',start=1, cycle=True),
                 nullable=False, primary_key=True)
 
