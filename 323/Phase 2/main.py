@@ -25,6 +25,7 @@ from orm_base import Base
 
 from Employee import Employee
 from KeyRequest import KeyRequest
+from DoorType import DoorType
 from Door import Door
 from Room import Room
 from Building import Building
