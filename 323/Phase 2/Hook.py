@@ -9,13 +9,14 @@ class Hook(Base):
     id = Column('id', Integer, Identity('hook_num', start=1, cycle=True),
                 nullable=False, primary_key=True)
 
-    copy_key = relationship("CopyKey", back_populates="hook")
+    # copy_key = relationship("CopyKey", back_populates="hook")
 
     doors_list: [HookLine] = relationship("HookLine", back_populates="hook", viewonly=False)
 
     def __init__(self, id: Integer):
-        self.id = id
-        self.doors_list = []
+        # self.id = id
+        # self.doors_list = []
+        pass
 
     def add_door(self, door):
         # make sure this genre is non already on the list.

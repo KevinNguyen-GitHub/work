@@ -22,4 +22,4 @@ class HookLine(Base):
         self.hooks_id = hook.hooks_id
 
         self.hook = hook
-        self.door = hook
+        self.door = door

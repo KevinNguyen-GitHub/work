@@ -1,28 +1,11 @@
-"""This "application" is a demonstration using SQLAlchemy to create a small number of tables and populate
-them.  Not evey possible use case for SQLAlchemy is explored in this demonstration, only those which are
-required for this particular demonstration.
-
-Technical Note: Be sure to have psycopg2 or whichever package you need to support whichever
-relational dialect that you are using installed.  No imports call attention to the database
-connectivity library, that is referenced when you run your entine."""
-
-# Think of Session and engine like global variables.  A little ghetto, but the only
-# other alternative would have been a singleton design pattern.
-
-# the db_connection.py code sets up some connection objects for us, almost like Java class variables
-# that get loaded up at run time.  This statement builds the Session class and the engine object
-# that we will use for interacting with the database.
+import datetime
 from db_connection import Session, engine
-# orm_base defines the Base class on which we build all of our Python classes and in so doing,
-# stipulates that the schema that we're using is 'demo'.  Once that's established, any class
-# that uses Base as its supertype will show up in the postgres.demo schema.
 from orm_base import metadata
 import logging
 from sqlalchemy import Column, String, Integer, Float, UniqueConstraint, \
     Identity, ForeignKey, distinct, bindparam
 from sqlalchemy.orm import relationship, backref
 from orm_base import Base
-
 from Employee import Employee
 from KeyRequest import KeyRequest
 from DoorType import DoorType
@@ -56,17 +39,8 @@ if __name__ == '__main__':
         print("1. Make A Request")
         print("2. Exit\n")
 
-    #set 1
-    e1: Employee = Employee(name="Kevin", id=1)
-    kr1: KeyRequest = KeyRequest(request_id=1, request_date='2022-01-31', employee_id=1, room_number=243,
-                                 room_buildings_name='ECS', copy_key_id=1, copy_key_is_loss=True)
-    b1: Building = Building(name="ECS")
-    r1: Room = Room(num=243, buildings_name='ECS')
-    d1: Door = Door(door_type_name='Front-Class', room_num=243, room_building_name='ECS')
-    dt1: DoorType = DoorType(name='Front-Class')
-    hl1: HookLine = HookLine(doors_door_type_name='Front-Class', doors_roon_num=243, doors_rooms_buildings_name='ECS',
-                             hooks_id=1)
-    h1: Hook = Hook(id=1)
+
+
 
 
     # Do our database work within a context.  This makes sure that the session gets closed
@@ -74,17 +48,154 @@ if __name__ == '__main__':
     # This way, we do not have memory leaks.
     with Session() as sess:
         sess.begin()
-        sess.add(e1)
-        sess.add(kr1)
+
+        #insert building
+        b1: Building = Building("ECS")
+        b2: Building = Building("Library")
+        b3: Building = Building("VEC")
+        b4: Building = Building("HC")
+        b5: Building = Building("ET")
+        b6: Building = Building("Rec")
         sess.add(b1)
-        sess.add(r1)
-        sess.add(d1)
-        sess.add(dt1)
-        sess.add(hl1)
-        sess.add(h1)
+        sess.add(b2)
+        sess.add(b3)
+        sess.add(b4)
+        sess.add(b5)
+        sess.add(b6)
         sess.commit()
 
+        #insert rooms
+        r1: Room = Room(100, b1)
+        r2: Room = Room(101, b2)
+        r3: Room = Room(102, b3)
+        r4: Room = Room(103, b4)
+        r5: Room = Room(104, b5)
+        r6: Room = Room(105, b6)
+        sess.add(r1)
+        sess.add(r2)
+        sess.add(r3)
+        sess.add(r4)
+        sess.add(r5)
+        sess.add(r6)
+        sess.commit()
 
+        #insert doors types
+        dt1: DoorType = DoorType("Front")
+        dt2: DoorType = DoorType("Back")
+        dt3: DoorType = DoorType("West")
+        dt4: DoorType = DoorType("East")
+        dt5: DoorType = DoorType("North-East")
+        dt6: DoorType = DoorType("South-East")
+        sess.add(dt1)
+        sess.add(dt2)
+        sess.add(dt3)
+        sess.add(dt4)
+        sess.add(dt5)
+        sess.add(dt6)
+        sess.commit()
+
+        #insert door
+        d1: Door = Door(dt1, r1)
+        d2: Door = Door(dt2, r2)
+        d3: Door = Door(dt3, r3)
+        d4: Door = Door(dt4, r4)
+        d5: Door = Door(dt1, r5)
+        d6: Door = Door(dt3, r6)
+        sess.add(d1)
+        sess.add(d2)
+        sess.add(d3)
+        sess.add(d4)
+        sess.add(d5)
+        sess.add(d6)
+        sess.commit()
+
+        #create hook
+        h1: Hook = Hook()
+        h2: Hook = Hook()
+        h3: Hook = Hook()
+        h4: Hook = Hook()
+        h5: Hook = Hook()
+        h6: Hook = Hook()
+        sess.add(h1)
+        sess.add(h2)
+        sess.add(h3)
+        sess.add(h4)
+        sess.add(h5)
+        sess.add(h6)
+        sess.commit()
+
+        #add doors
+        h1.add_door(d1)
+        h2.add_door(d2)
+        h3.add_door(d3)
+        h4.add_door(d4)
+        h5.add_door(d5)
+        h6.add_door(d6)
+        sess.commit()
+
+        #create employees
+        e1: Employee = Employee("Kevin", 1)
+        e2: Employee = Employee("Bob", 2)
+        e3: Employee = Employee("Ivy", 3)
+        e4: Employee = Employee("Erika", 4)
+        e5: Employee = Employee("Carina", 5)
+        e6: Employee = Employee("John", 6)
+        sess.add(e1)
+        sess.add(e2)
+        sess.add(e3)
+        sess.add(e4)
+        sess.add(e5)
+        sess.add(e6)
+        sess.commit()
+
+        #create key request
+        rq1: KeyRequest = KeyRequest(e1, r1, k1)
+        rq2: KeyRequest = KeyRequest(e2, r5, k2)
+        rq3: KeyRequest = KeyRequest(e3, r3, k4)
+        rq4: KeyRequest = KeyRequest(e4, r2, k6)
+        rq5: KeyRequest = KeyRequest(e5, r4, k5)
+        rq6: KeyRequest = KeyRequest(e6, r6, k3)
+        sess.add(rq1)
+        sess.add(rq2)
+        sess.add(rq3)
+        sess.add(rq4)
+        sess.add(rq5)
+        sess.add(rq6)
+        sess.commit()
+
+        #create loss key
+        loss1: Loss = Loss(rq1, datetime.datetime(2022, 3, 24))
+        loss2: Loss = Loss(rq5, datetime.datetime(2022, 6, 1))
+        loss3: Loss = Loss(rq2, datetime.datetime(2022, 1, 25))
+        loss4: Loss = Loss(rq4, datetime.datetime(2012, 8, 10))
+        loss5: Loss = Loss(rq2, datetime.datetime(2022, 5, 11))
+        loss6: Loss = Loss(rq1, datetime.datetime(2022, 2, 18))
+        loss7: Loss = Loss(rq5, datetime.datetime(2022, 12, 29))
+        sess.add(loss1)
+        sess.add(loss2)
+        sess.add(loss3)
+        sess.add(loss4)
+        sess.add(loss5)
+        sess.add(loss6)
+        sess.add(loss7)
+        sess.commit()
+
+        #create return key
+        rt1: Return = Return(rq1, datetime.datetime(2022, 1, 5))
+        rt2: Return = Return(rq3, datetime.datetime(2022, 2, 10))
+        rt3: Return = Return(rq2, datetime.datetime(2022, 3, 15))
+        rt4: Return = Return(rq1, datetime.datetime(2022, 4, 20))
+        rt5: Return = Return(rq6, datetime.datetime(2022, 5, 25))
+        rt6: Return = Return(rq5, datetime.datetime(2022, 6, 21))
+        rt7: Return = Return(rq6, datetime.datetime(2022, 7, 15))
+        sess.add(rt1)
+        sess.add(rt2)
+        sess.add(rt3)
+        sess.add(rt4)
+        sess.add(rt5)
+        sess.add(rt6)
+        sess.add(rt7)
+        sess.commit()
 
     # active = False
     # While not active:
