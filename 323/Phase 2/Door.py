@@ -10,7 +10,7 @@ class Door(Base):
     rooms_buildings_name = Column(String(50), ForeignKey('rooms.buildings_name'), primary_key=True, nullable=False)
     
     #relationship 
-    hooks_list : [HookLine] = relationship("HookLine", back_populates="door", viewonly=False)
+    hooks_list: [HookLine] = relationship("HookLine", back_populates="door", viewonly=False)
     
     def __init__(self, door_type, room):
         self.door_type_name = door_type.door_type_name

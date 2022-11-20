@@ -17,7 +17,7 @@ class HookLine(Base):
     def __init__(self, door, hook):
         self.doors_door_type_name = door.doors_door_type_name
         self.doors_rooms_num = door.doors_rooms_num
-        self.doors_rooms_buildings_name =door.doors_rooms_buildings_name 
+        self.doors_rooms_buildings_name = door.doors_rooms_buildings_name
         self.hooks_id = hook.hooks_id
 
         self.hook = hook
