@@ -50,6 +50,12 @@ if __name__ == '__main__':
     # those tables for us.
     metadata.create_all(bind=engine)
 
+    def printMainMenu():
+        print("Are you here to request a key?")
+        print("0. View")
+        print("1. Make A Request")
+        print("2. Exit\n")
+
     #set 1
     e1: Employee = Employee(name="Kevin", id=1)
     kr1: KeyRequest = KeyRequest(request_id=1, request_date='2022-01-31', employee_id=1, room_number=243,
