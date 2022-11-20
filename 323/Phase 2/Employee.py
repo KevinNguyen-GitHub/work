@@ -21,17 +21,13 @@ class Employee(Base):
             # make sure this genre is non already on the list.
         for next_room in self.rooms_list:
             if next_room == room:
-                return
-
-    def make_request(self, request):
-        for r in self.employees_list:
-            if r == request:
                 print("Request already made previously.")
                 return
 
+
         # Create an instance of the junction table class for this relationship.
-        key_request = KeyRequest(self, request)
+        key_request = KeyRequest(self, room)
         # Update this move to reflect that we have this genre now.
-        request.employees_list.append(key_request)
+        room.employees_list.append(key_request)
         # Update the genre to reflect this movie.
         self.rooms_list.append(key_request)
