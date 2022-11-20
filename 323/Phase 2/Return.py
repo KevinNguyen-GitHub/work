@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from orm_base import Base
 
 class Return(Base):
-    __tablename__ = "return"
+    __tablename__ = "returns"
     return_date = Column("loss_date", Date, nullable=False)
     key_requests_request_id = Column(Integer, ForeignKey('key_requests.request_id'), primary_key=True, nullable=False)
     loaned_date = Column('loaned_date', Date, nullable=False)
