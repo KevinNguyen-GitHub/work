@@ -50,6 +50,8 @@ if __name__ == '__main__':
     # those tables for us.
     metadata.create_all(bind=engine)
 
+    e1: Employee = Employee(name="Kevin", id=1)
+
     # Do our database work within a context.  This makes sure that the session gets closed
     # at the end of the with, much like what it would be like if you used a with to open a file.
     # This way, we do not have memory leaks.

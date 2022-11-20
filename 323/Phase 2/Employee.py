@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy import Column, String, Integer, Date, Time, Boolean, Identity, ForeignKey
 from sqlalchemy.orm import relationship
 from orm_base import Base
 
@@ -8,7 +8,7 @@ class Employee(Base):
     __tablename__ = "employees"
     name = Column("name", String(40), nullable=False)
     id = Column("id", Integer, Identity(start=1, cycle=True),
-                       nullable=False, primary_key=True))
+                       nullable=False, primary_key=True)
                        
     rooms_list: [KeyRequest] = relationship("KeyRequest", back_populates="employee", viewonly=False)
     
