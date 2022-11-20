@@ -9,6 +9,6 @@ class Loss(Base):
     loaned_date = Column('loaned_date', Date, nullable=False)
     
     def __init__(self, loss_date: Date, key_request, loaned_date):
-        self.return_date = return_date
+        self.loss_date = loss_date
         self.key_requests_request_id = key_request.key_requests_request_id
         self.loaned_date = loaned_date 
