@@ -23,6 +23,16 @@ from sqlalchemy import Column, String, Integer, Float, UniqueConstraint, \
 from sqlalchemy.orm import relationship, backref
 from orm_base import Base
 
+from Employee import Employee
+from KeyRequest import KeyRequest
+from Door import Door
+from Room import Room
+from Building import Building
+from CopyKey import CopyKey
+from Hook import Hook
+from HookLine import HookLine
+from Return import Return
+from Loss import Loss
 
 if __name__ == '__main__':
     logging.basicConfig()
