@@ -6,15 +6,13 @@ from KeyRequest import KeyRequest
 
 class Room(Base):
     __tablename__ = "rooms"
-    num = Column("num", Integer, primary_key=True, nullable=False)
-    buildings_name = Column(String(50), ForeignKey('buildings.name'), primary_key=True, nullable=False)
+    num = Column("num", Integer, nullable=False, primary_key=True)
+    buildings_name = Column(String(50), ForeignKey('buildings.name'), nullable=False, primary_key=True)
 
     door = relationship("Door")
     employees_list: [KeyRequest] = relationship("KeyRequest", back_populates="room", viewonly=False)
 
-    table_args = (UniqueConstraint('num', 'buildings_name', name='room_uk_01'))
-
-    def __init__(self, num: Integer, buildings_name):
+    def __init__(self, num: Integer, buildings_name: String):
         self.num = num
         self.buildings_name = buildings_name
 
