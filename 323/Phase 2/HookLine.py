@@ -23,4 +23,3 @@ class HookLine(Base):
 
         self.hook = hook
         self.door = hook
-# testing

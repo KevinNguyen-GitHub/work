@@ -33,3 +33,8 @@ class KeyRequest(Base):
         self.rooms_buildings_name = room.buildings_name
         self.copy_keys_id = copy_key.id
         self.copy_key_is_loss = copy_key.is_loss
+
+    def __str__(self):
+        return str("Room Number: " + str(self.number) + "  Building Name: " + str(self.rooms_buildings_name) +
+                   "  Employee ID: " + str(self.employee_id) + "Requested Date: " + str(self.request_date) +
+                   "Key ID: " + str(self.copy_keys_id))
