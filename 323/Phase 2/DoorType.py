@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Integer, Identity, Float, \
-    String, UniqueConstraint
+from sqlalchemy import Column, Integer, Identity, Float, String, UniqueConstraint
 from sqlalchemy.orm import relationship
 from orm_base import Base
 from HookLine import HookLine
