@@ -17,16 +17,12 @@ def printTable(table: collection):
     for i in l:
         res = ""
         for j in i.keys():
-            if j == "_id":
-                continue
+            if j == "_id": continue
             if type(i[j]) == DBRef:
-                t: DBRef = i[j]
-                divider = str(t).split(',')
-                res += str(j) + ":" + " " + divider[1][0:len(divider[1]) - 1] + "  "
+                res += str(j) + ":" + " " + str(i[j].id) + "  "
             else:
                 res += str(j) + ":" + " " + str(i[j])
         final_res.append(res)
-    print("\n˜”*°•.˜”*°•ღ  " + t.collection + "  ˜”*°•.˜”*°•ღ \n")
 
     for i in final_res:
         print(i)
@@ -51,6 +47,20 @@ def createEmployees():
         {"employee_id": 194792011, "employee_name": "Jose Martinez"},
     ])
     return employee
+
+
+def deleteEmployee(id):
+    userInput = id
+    print(db.Employees.find_one({"employee_id": userInput}))
+    if db.Employees.find_one({"employee_id": userInput}) == None:
+        print("Sorry, could not find that employee.")
+    else:
+        if db.CopyKey.find_one({"key_id": userInput}) == None:
+            db.Employees.delete_one({"employee_id": userInput})
+            print("Employee succesfully deleted!")
+            printTable(Employees)
+        else:
+            print('Sorry, employee still has access to rooms and cannot be deleted.')
 
 
 # GET METHOD
@@ -155,7 +165,7 @@ def createDoorTypes():
 # GET METHOD
 def get_random_hook(db):
     res = []
-    # putting all of the hooks inot one List
+    # putting all of the hooks into one List
     hooksList = db.Hooks.find()
     for i in hooksList: res.append(i["hook_id"])
     # returns the int value of the chosen random hook
@@ -236,20 +246,30 @@ def get_copyKey(db, copykey):
 def createCopyKeys():
     db.CopyKeys.drop()
     copykey: collection = db.CopyKeys
+    copykey.create_index([("key_id", pymongo.ASCENDING),
+                          ("hook_id", pymongo.ASCENDING)], unique=True)
+    copykey.create_index([("is_lost", pymongo.ASCENDING)])
     result = copykey.insert_many([
-        {"key_id": DBRef("hooks", get_hook(db, 2919))},
-        {"key_id": DBRef("hooks", get_hook(db, 1212))},
-        {"key_id": DBRef("hooks", get_hook(db, 3729))},
-        {"key_id": DBRef("hooks", get_hook(db, 47291))},
-        {"key_id": DBRef("hooks", get_hook(db, 7592))},
-        {"key_id": DBRef("hooks", get_hook(db, 5932))},
+        {"key_id": 3452, "hook_id": DBRef("hooks", get_hook(db, 2919), ), "is_lost": False},
+        {"key_id": 2343, "hook_id": DBRef("hooks", get_hook(db, 1212)), "is_lost": False}
+
     ])
 
     return copykey
 
 
-# WORK IN PROGRESS
-# need copy_key_id
+def employeeCreateKey(i):
+    userInput = i
+    if db.Hooks.find_one({"hook_id": userInput}) == None:
+        print("sorry, couldnt find that hook")
+    else:
+        db.CopyKeys.insert_many(
+            [{"key_id": random.randint(1000, 9999), "hook_id": DBRef("hooks", userInput), "is_lost": False}])
+        print("success!")
+        print("new key added to table!")
+        printTable(copykeys)
+
+
 def get_keyrequest(db, keyrequest):
     result = db.KeyRequests.find_one({"request_id": keyrequest})['request_id']
     return result
@@ -317,7 +337,6 @@ def createKeyRequests():
     return keyrequest
 
 
-# WORK IN PROGRESS
 def createReturns():
     db.Returns.drop()
     returns: collection = db.Returns
@@ -331,7 +350,6 @@ def createReturns():
     return returns
 
 
-# WORK IN PROGRESS
 def createLoss():
     db.Loss.drop()
     loss: collection = db.Loss
@@ -343,6 +361,20 @@ def createLoss():
          "issued_time": db.KeyRequests.find_one({"request_id": 101})['issued_time']}
     ])
     return loss
+
+
+def delete_key(i):
+    userInput = i
+    print(db.CopyKeys.find_one({"key_id": userInput}))
+    if db.CopyKeys.find_one({"key_id": userInput}) == None:
+        print("sorry, could not find that key")
+    else:
+        if db.Employees.find_one({"key_id": userInput}) == None:
+            db.CopyKeys.delete_one({"key_id": userInput})
+            print("key succesfully deleted!")
+            printTable(copykeys)
+        else:
+            print('sorry, key is in use and could not be deleted')
 
 
 def createTables():
@@ -361,6 +393,13 @@ def createTables():
     return buildings, rooms, employees, doortypes, doors, hooks, copykeys, keyrequests, returns, loss, hooklines
 
 
+# someone test please
+def roomAccess(room):
+    employees = db.Employees.find({"rooms": room["room_num"]})
+    for employee in employees:
+        print(employee["name"])
+
+
 def menu():
     print("\n✧･ﾟ: *✧･ﾟ:* 【 ｍｅｎｕ 】 *:･ﾟ✧*:･ﾟ✧")
     userInput = -math.inf
@@ -368,23 +407,134 @@ def menu():
         print("0. exit")
         print("1. Display Tables")
         print("2. Create New Key ")
-        print("3. Request access to a given room by a given employee ")
-        print("4. Capture the issue of a key to an employee ")
-        print("5. Issue a Key ")
-        print("6. Capture losing a key ")
-        print("7. Report out all the rooms that an employee can enter, given the keys that he/she already has.")
-        print("8. Delete a key. ")
-        print("9. Delete an employee. ")
-        print("10. Add a new door that can be opened by an existing hook.")
-        print("11. Update an access request to move it to a new employee. ")
-        print("12. Report out all the employees who can get into a room. ")
+        print("3. NW Request access to a given room by a given employee ")
+        print("4. NW Capture the issue of a key to an employee ")
+        print("5. NW Issue a Key ")
+        print("6. NW Capture losing a key ")
+        print("7. NW Report out all the rooms that an employee can enter, given the keys that he/she already has.")
+        print("8. NW Delete a key. ")
+        print("9. NW Delete an employee. ")
+        print("10. NW Add a new door that can be opened by an existing hook.")
+        print("11. NW Update an access request to move it to a new employee. ")
+        print("12. NW Report out all the employees who can get into a room. ")
         userInput = int(input("Please choose an option "))
         if userInput == 0:
             break
+
         elif userInput == 1:
+            print("BUILDINGS")
+            printTable(buildings)
+            print("ROOMS")
             printTable(rooms)
+            print("DOORS")
+            printTable(doors)
+            print("DOOR TYPES")
+            printTable(doortypes)
+            print("HOOKS")
+            printTable(hooks)
+            print("COPY KEYS")
+            printTable(copykeys)
+            print("HOOKLINE")
+            printTable(hooklines)
+            print("EMPLOYEES")
+            printTable(employees)
+            print("KEY REQUESTS")
+            printTable(keyrequests)
+            print("RETURNS")
+            printTable(returns)
+            print("LOSS")
+            printTable(loss)
+
+
+        elif userInput == 2:
+            print("you selected: Create a new Key")
+            print("here are your options")
+            printTable(hooks)
+            try:
+                i = int(input("Please input Hook ID that you want a key of:"))
+                employeeCreateKey(i)
+            except:
+                print("an expection has occured, try again")
+
+
+        elif userInput == 3:
+            print("you selected: Request access to a given room by a given employee")
+            print("here are your options")
+            printTable(employees)
+
+
+        elif userInput == 4:
+            print("you selected: Capture the issue of a key to an employee")
+            print("here are your options")
+            printTable(employees)
+
+        elif userInput == 5:
+            print("you selected: Issue a Key")
+            print("here are your options")
+            printTable(employees)
+
+        elif userInput == 6:
+            print("you selected: Capture losing a key ")
+            print("here are your options")
+            printTable(employees)
+
+        elif userInput == 7:
+            print(
+                "you selected: Report out all the rooms that an employee can enter, given the keys that he/she already has.")
+            print("here are your options")
+            printTable(employees)
+            employee = input(int("Enter employee ID: "))
+            printTable(Rooms)
+            room = input(int("Enter room number: "))
+
+        elif userInput == 8:
+            print("you selected: Delete a key")
+            print("here are your options")
+            printTable(copykeys)
+            try:
+                i = int(input("Please input the key id of the one you would like to delete:"))
+                delete_key(i)
+            except:
+                print("an expection has occured, try again")
+
+
+
+        elif userInput == 9:
+
+            print('You selected: Delete an employee')
+            print("here are your options")
+            printTable(employees)
+            try:
+                id = int(input("Please input the employee id of the one you would like to delete:"))
+                deleteEmployee(id)
+            except:
+                print("an expection has occured, try again")
+
+
+        elif userInput == 10:
+            print("you selected: Add a new door that can be opened by an existing hook.")
+            print("here are your options")
+
+            printTable(employees)
+        elif userInput == 11:
+            print("you selected: Update an access request to move it to a new employee.")
+            print("here are your options")
+            printTable(employees)
+
+        elif userInput == 12:
+            print("you selected: Report out all the employees who can get into a room.")
+            print("here are your options")
+            printTable(rooms)
+            number = int(input("Room number: "))
+            room = db.rooms.find_one({"number": number})
+            if number not in room:
+                print("Invalid Number. Please choose again")
+                number = int(input("Room number: "))
+            else:
+                print("here")
+
         else:
-            print("Invalid Input")
+            print("Invalid Selection. Please try again.")
             menu()
             break
 
@@ -395,93 +545,6 @@ if __name__ == "__main__":
         "mongodb+srv://Group7:Group7@keyhooksphase3.mcuiog0.mongodb.net/keyhooksphase3?tlsAllowInvalidCertificates=true")
     db = client.KeyHookPhase3
     buildings, rooms, employees, doortypes, doors, hooks, copykeys, keyrequests, returns, loss, hooklines = createTables()
-    input = menu()
-    if input == 2:
-        # db.Keys.insert_one(
-        #     {
-        #         "door_id": door_id,
-        #         "employee_id": employee_id,
-        #         "lost": false
-        #     }
-        # )
-    elif input == 3:
-        # db.AccessRequests.insert_one(
-        #     {
-        #         "room_id": room_id,
-        #         "employee_id": employee_id,
-        #         "status": "pending"
-        #     }
-        # )
-    elif input == 4:
-        # Capture the issue of a key to an employee
-        # db.Keys.insert_one(
-        #     {
-        #         "door_id": door_id,
-        #         "employee_id": employee_id
-        #     }
-        # )
-    elif input == 5:
-        # db.Keys.insert_one(
-        #     {
-        #         "door_id": door_id,
-        #         "employee_id": employee_id,
-        #         "lost": false
-        #     }
-        # )
-    elif input == 6:
-        # Capture losing a key
-        # db.Keys.update_one(
-        #     # Filter to find the key that was lost
-        #     {"_id": key_id},
-        #     # Use $set to update the lost field
-        #     {"$set": {"lost": true}}
-        # )
-    elif input == 7:
-        # Get all rooms
-        # rooms = db.Rooms.find()
-        #
-        # # Get all keys that the employee has
-        # keys = db.Keys.find({"employee_id": employee_id})
-        #
-        # # Iterate over rooms and keys
-        # for room in rooms:
-        #     for key in keys:
-        #         # Check if the employee has a key that can open the room
-        #         if key["door_id"] == room["door_id"]:
-        #             print("Employee can access room " + room["room_num"])
-    elif input == 8:
-
-    elif input == 9:
-        # db.Employees.delete_one(
-        #     # Filter to match the employee you want to delete
-        #     {"employee_id": employee_id}
-        # )
-    elif input == 10:
-        # db.Doors.insert_one(
-        #     {
-        #         "door_name": "New Door",
-        #         "hook_id": existing_hook_id
-        #     }
-        # )
-    elif input == 11:
-        # db.AccessRequests.update_one(
-        #     # Filter to find the access request you want to move
-        #     {"_id": access_request_id},
-        #     # Use $set to update the employee_id field
-        #     {"$set": {"employee_id": new_employee_id}}
-        # )
-    elif input == 12:
-        # # Get all rooms
-        # rooms = db.Rooms.find()
-        #
-        # # Get all employees
-        # employees = db.Employees.find()
-        #
-        # # Iterate over rooms and employees
-        # for room in rooms:
-        #     for employee in employees:
-        #         # Check if employee has access to room
-        #         if employee["access_level"] >= room["access_level_required"]:
-        #             print(employee["name"] + " can access room " + room["room_num"])
+    menu()
     print("˜”*°•.˜”*°•ღ  Exiting...  ღ˜”*°•.˜”*°•")
     exit()
