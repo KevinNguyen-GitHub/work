@@ -367,17 +367,17 @@ def menu():
     while userInput != 0:
         print("0. exit")
         print("1. Display Tables")
-        print("2. NW Create New Key ")
-        print("3. NW Request access to a given room by a given employee ")
-        print("4. NW Capture the issue of a key to an employee ")
-        print("5. NW Issue a Key ")
-        print("6. NW Capture losing a key ")
-        print("7. NW Report out all the rooms that an employee can enter, given the keys that he/she already has.")
-        print("8. NW Delete a key. ")
-        print("9. NW Delete an employee. ")
-        print("10. NW Add a new door that can be opened by an existing hook.")
-        print("11. NW Update an access request to move it to a new employee. ")
-        print("12. NW Report out all the employees who can get into a room. ")
+        print("2. Create New Key ")
+        print("3. Request access to a given room by a given employee ")
+        print("4. Capture the issue of a key to an employee ")
+        print("5. Issue a Key ")
+        print("6. Capture losing a key ")
+        print("7. Report out all the rooms that an employee can enter, given the keys that he/she already has.")
+        print("8. Delete a key. ")
+        print("9. Delete an employee. ")
+        print("10. Add a new door that can be opened by an existing hook.")
+        print("11. Update an access request to move it to a new employee. ")
+        print("12. Report out all the employees who can get into a room. ")
         userInput = int(input("Please choose an option "))
         if userInput == 0:
             break
@@ -397,26 +397,91 @@ if __name__ == "__main__":
     buildings, rooms, employees, doortypes, doors, hooks, copykeys, keyrequests, returns, loss, hooklines = createTables()
     input = menu()
     if input == 2:
-        print("Creating a new key")
+        # db.Keys.insert_one(
+        #     {
+        #         "door_id": door_id,
+        #         "employee_id": employee_id,
+        #         "lost": false
+        #     }
+        # )
     elif input == 3:
-        print("Requesting access")
+        # db.AccessRequests.insert_one(
+        #     {
+        #         "room_id": room_id,
+        #         "employee_id": employee_id,
+        #         "status": "pending"
+        #     }
+        # )
     elif input == 4:
-        print("Key details")
+        # Capture the issue of a key to an employee
+        # db.Keys.insert_one(
+        #     {
+        #         "door_id": door_id,
+        #         "employee_id": employee_id
+        #     }
+        # )
     elif input == 5:
-        print("Issuing a key")
+        # db.Keys.insert_one(
+        #     {
+        #         "door_id": door_id,
+        #         "employee_id": employee_id,
+        #         "lost": false
+        #     }
+        # )
     elif input == 6:
-        print("Key is lost")
+        # Capture losing a key
+        # db.Keys.update_one(
+        #     # Filter to find the key that was lost
+        #     {"_id": key_id},
+        #     # Use $set to update the lost field
+        #     {"$set": {"lost": true}}
+        # )
     elif input == 7:
-        print("Accessible rooms")
+        # Get all rooms
+        # rooms = db.Rooms.find()
+        #
+        # # Get all keys that the employee has
+        # keys = db.Keys.find({"employee_id": employee_id})
+        #
+        # # Iterate over rooms and keys
+        # for room in rooms:
+        #     for key in keys:
+        #         # Check if the employee has a key that can open the room
+        #         if key["door_id"] == room["door_id"]:
+        #             print("Employee can access room " + room["room_num"])
     elif input == 8:
-        print("Key deleted")
+
     elif input == 9:
-        print("Employee deleted")
+        # db.Employees.delete_one(
+        #     # Filter to match the employee you want to delete
+        #     {"employee_id": employee_id}
+        # )
     elif input == 10:
-        print("Door added")
+        # db.Doors.insert_one(
+        #     {
+        #         "door_name": "New Door",
+        #         "hook_id": existing_hook_id
+        #     }
+        # )
     elif input == 11:
-        print("Access request updated")
+        # db.AccessRequests.update_one(
+        #     # Filter to find the access request you want to move
+        #     {"_id": access_request_id},
+        #     # Use $set to update the employee_id field
+        #     {"$set": {"employee_id": new_employee_id}}
+        # )
     elif input == 12:
-        print("Employee with access")
+        # # Get all rooms
+        # rooms = db.Rooms.find()
+        #
+        # # Get all employees
+        # employees = db.Employees.find()
+        #
+        # # Iterate over rooms and employees
+        # for room in rooms:
+        #     for employee in employees:
+        #         # Check if employee has access to room
+        #         if employee["access_level"] >= room["access_level_required"]:
+        #             print(employee["name"] + " can access room " + room["room_num"])
     print("˜”*°•.˜”*°•ღ  Exiting...  ღ˜”*°•.˜”*°•")
     exit()
