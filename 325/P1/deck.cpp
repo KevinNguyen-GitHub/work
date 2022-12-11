@@ -1,34 +1,73 @@
-#include <iostream>
-using namespace std;
-public class Deck {
-	private:
-		int top;
-	public:
-		Deck( ){
-		deck[52];
-	} // constructor which creates a deck of 52 cards. Ace of Spades on top, followed by the rest of the spades in order, followed by Hearts, Diamonds and Clubs.
-		void refreshDeck(); // reset the deck so it looks like a new deck.
+//Implementation of deck class
+#include "deck.h"
+//Constructor
+Deck::Deck() 
+{
+	char ranks[] = { 'A','1','2','3','4','5','6','7','8','9','J','Q','K' };
+	char suits[] = { 'S','H','D','C' };
+	int k = 0;
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 13; j++)
 		{
-			deck[52]
+		deck[k++] = Card(ranks[j], suits[i]);
 		}
-		Card deal( ) // deal a card from the top of the deck.
+	}	
+	cardsCnt = 52;
+}
+//Create a fresh deck
+void Deck::refreshDeck() 
+{
+	char ranks[] = { 'A','1','2','3','4','5','6','7','8','9','J','Q','K' };
+	char suits[] = { 'S','H','D','C' };
+	int k = 0;
+	for (int i = 0; i < 4; i++) 
+	{
+		for (int j = 0; j < 13; j++)
 		{
-			top++;
+		deck[k++] = Card(ranks[j], suits[i]);
 		}
-		void shuffle( )// shuffle the cards in the deck.
+	}
+	cardsCnt = 52;
+}
+//Get a card from top
+Card Deck::deal() 
+{
+	Card c=deck[cardsCnt - 1];
+	cardsCnt--;
+	return c;
+}
+//Shuffle
+void Deck::shuffle() 
+{
+	srand(0);
+	for (int i = 0; i <cardsCnt; i++)
+	{
+		int r = i + (rand() % (52 - i));
+		Card temp = deck[i];
+		deck[i] = deck[r];
+		deck[r] = temp;
+	}
+}
+//Number of cards left in deck
+int Deck::cardsLeft() 
+{
+	return cardsCnt;
+}
+//Display deck
+void Deck :: display() 
+{
+	for (int i = 0; i < 52; i++) 
+	{
+		if (i % 13 == 0 && i != 0) 
 		{
-
+		cout << endl;
+		deck[i].display();
+		cout << " ";
 		}
-		bool isEmpty( ) // true is deck is empty, false if the deck is not empty
+		else 
 		{
-			if ( top == 52)[
-				return true;
-			] else {
-				return false;
-			}
+			deck[i].display();
+			cout << " ";
 		}
-		void display( ); // show all the cards in the deck: 13 columns and 4 rows.
-		{
-			
-		}
+	}
 }
