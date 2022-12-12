@@ -39,14 +39,14 @@ Card Deck::deal()
 //Shuffle
 void Deck::shuffle() 
 {
-	srand(0);
-	for (int i = 0; i <cardsCnt; i++)
-	{
-		int r = i + (rand() % (52 - i));
-		Card temp = deck[i];
-		deck[i] = deck[r];
-		deck[r] = temp;
-	}
+  srand(time(0)); // Use the current time as the seed for the random number generator
+  for (int i = 0; i < cardsCnt; i++)
+  {
+    int r = i + (rand() % (52 - i));
+    Card temp = deck[i];
+    deck[i] = deck[r];
+    deck[r] = temp;
+  }
 }
 //Number of cards left in deck
 int Deck::cardsLeft() 
