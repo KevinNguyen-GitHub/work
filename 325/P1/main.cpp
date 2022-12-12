@@ -110,7 +110,7 @@ void playGame(Deck& deck)
     {
         cout << "\nWinner in " << piles << " piles!\n";
     }
-}
+}/
 
 
 //Check passed value is fibo or not
