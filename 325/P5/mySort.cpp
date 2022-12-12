@@ -5,7 +5,12 @@
 #include <thread>
 #include <unistd.h>
 using namespace std;
-  
+
+struct arguments
+{
+    int *arr;
+};
+
 void swap(int* a, int* b)
 {
     int temp = *a;
@@ -37,31 +42,6 @@ void quickSort(int arr[], int low, int high)
     }
 }
 
-template<typename T, typename InputIt1, typename InputIt2, typename OutputIt>
-void merge(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first)
-{
-    while (first1 != last1 && first2 != last2)
-    {
-        if (*first2 < *first1)
-        {
-            *d_first++ = *first2++;
-        }
-        else
-        {
-            *d_first++ = *first1++;
-        }
-    }
-
-    while (first1 != last1)
-    {
-        *d_first++ = *first1++;
-    }
-
-    while (first2 != last2)
-    {
-        *d_first++ = *first2++;
-    }
-}
 
 
 int main(int argc, char* argv[])
@@ -91,15 +71,10 @@ int main(int argc, char* argv[])
 	}
 
     
-    array<int, THREAD_MAX> a1{}, a2{}, a3{}, a4{}, a5{}, a6{}, a7{}, a8{};
-    copy(v.begin(), min(v.begin() + THREAD_MAX, v.end()), a1.begin());
-    copy(v.begin() + THREAD_MAX, min(v.begin() + 2 * THREAD_MAX, v.end()), a2.begin());
-    copy(v.begin() + 2 * THREAD_MAX, min(v.begin() + 3 * THREAD_MAX, v.end()), a3.begin());
-    copy(v.begin() + 3 * THREAD_MAX, min(v.begin() + 4 * THREAD_MAX, v.end()), a4.begin());
-    copy(v.begin() + 4 * THREAD_MAX, min(v.begin() + 5 * THREAD_MAX, v.end()), a5.begin());
-    copy(v.begin() + 5 * THREAD_MAX, min(v.begin() + 6 * THREAD_MAX, v.end()), a6.begin());
-    copy(v.begin() + 6 * THREAD_MAX, min(v.begin() + 7 * THREAD_MAX, v.end()), a7.begin());
-    copy(v.begin() + 7 * THREAD_MAX, min(v.begin() + 8 * THREAD_MAX, v.end()), a8.begin());
+    arguments argList[8];
+    for (int i = 0; i < 8; i++) {
+      argList[i].arr = v + (i * THREAD_MAX);
+    }
 
     thread thread0(&quickSort,a1.data(),0,THREAD_MAX -1);
     thread thread1(&quickSort,a2.data(),THREAD_MAX,THREAD_MAX*2 -1);
@@ -120,19 +95,31 @@ int main(int argc, char* argv[])
     thread6.join();
     thread7.join();
 
-    array<int, MAX> sortedArray;
-    merge<int>(a1.begin(), a1.end(), a2.begin(), a2.end(), sortedArray.begin());
-    merge<int>(sortedArray.begin(), sortedArray.end(), a3.begin(), a3.end(), sortedArray.begin());
-    merge<int>(sortedArray.begin(), sortedArray.end(), a4.begin(), a4.end(), sortedArray.begin());
-    merge<int>(sortedArray.begin(), sortedArray.end(), a5.begin(), a5.end(), sortedArray.begin());
-    merge<int>(sortedArray.begin(), sortedArray.end(), a6.begin(), a6.end(), sortedArray.begin());
-    merge<int>(sortedArray.begin(), sortedArray.end(), a7.begin(), a7.end(), sortedArray.begin());
-    merge<int>(sortedArray.begin(), sortedArray.end(), a8.begin(), a8.end(), sortedArray.begin());
+    // merging
+    int indices[8];
+    for( int i = 0; i < 8; i++){
+      indices[i] = (i*THREAD_MAX);
+    }
+    int first = 0;
+    int second;
+    while (first <= 6) {
+      second = first + 1;
+      merge(v, indices[first], indices[second]); // ( arr l r )
+      first = second + 1;
+    }
 
+    // merge
+    merge(v, indices[0], 250000); //4
+    merge(v, 250000, 500000); //4
+    merge(v, 500000, 750000); //2
+    merge(v, 250000, MAX);  //2
+    merge(v, indices[0], MAX); 
+
+    
     fout.open(argv[2], ios::out | ios::trunc);
-    for (int i = 0; i < MAX; i++)
-    fout << sortedArray[i] <<endl;
-
+    for (int i = 0; i < count - 1; i++)
+        fout << v[i] <<endl;
+    fout << v[count - 1] <<endl;
     fout.close();
     fin.close();
     return 0;

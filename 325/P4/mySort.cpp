@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
     int indices[8];
     for( int i = 0; i < 8; i++){
       indices[i] = (i*THREAD_MAX);
-
+    }
     int first = 0;
     int second;
     while (first <= 6) {
