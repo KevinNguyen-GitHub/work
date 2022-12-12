@@ -1,3 +1,4 @@
+//card.cpp
 #include "card.h"
 using namespace std;
 Card :: Card()
@@ -64,6 +65,7 @@ void Card::display( )// display the card using 2 fields… Ace of Spade:AS, Ten 
 }
 
 
+//deck.cpp
 //Implementation of deck class
 #include "deck.h"
 //Constructor
@@ -138,7 +140,9 @@ void Deck :: display()
 	}
 }
 
+//main.cpp
 #include "deck.h"
+#include "card.h"
 #include <stack>
 
 //Function prototypes
@@ -201,40 +205,62 @@ void playGame(Deck& deck)
     int piles = 0,sum=0;
     stack<Card> hand;
     cout << "\nPlaying Solitaire game!!\n\n";
-    //Play game until deck cards count reach 0
-    while (deck.cardsLeft() != 0) 
+
+    // Play game until deck cards count reach 0
+    while (true) 
     {
-        //Otherwise take a card check sum
+        if (deck.cardsLeft() == 0) 
+        {
+            // If the last sum is a fibonacci number, exit the game
+            if (isFibonacci(sum)) 
+            {
+                break;
+            }
+            // Otherwise, continue playing
+            else 
+            {
+                deck.refreshDeck();
+                deck.shuffle();
+            }
+        }
+
+        // Take a card and check the sum
         Card c = deck.deal();
         sum += c.getValue();
-        //If print then clear and increment piles count
+
+        // If the sum is a fibonacci number, print the stack and increment the piles count
         if (isFibonacci(sum)) 
         {
             hand.push(c);
-            //Display stack reverse order
+            // Display stack in reverse order
             printStackReverse(hand);
             hand = stack<Card>();
             cout << " Fibonacci: " << sum << endl;
-            piles++;
+            piles++; 
             sum = 0;
         }
-        //Otherwise add into stack
+        // Otherwise add the card to the stack
         else 
         {
             hand.push(c);
         }
     }
-    if (sum!=0) 
+
+    // Check if the piles count is greater than 0, and if it is, print the "Winner" message
+    if (piles > 0) 
+    {
+        cout << "\nWinner in " << piles << " piles!\n";
+    }
+
+    // If the last sum is not a fibonacci number, print the "Loser" message
+    else 
     {
         printStackReverse(hand);
         hand = stack<Card>();
         cout << " Loser\n";
     }
-    else 
-    {
-        cout << "\nWinner in " << piles << " piles!\n";
-    }
 }
+
 
 //Check passed value is fibo or not
 bool isFibonacci(int n)

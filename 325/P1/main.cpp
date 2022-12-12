@@ -1,4 +1,5 @@
 #include "deck.h"
+#include "card.h"
 #include <stack>
 
 //Function prototypes
@@ -55,7 +56,6 @@ int main()
 }
 
 //Function simulate a play
-//Function simulate a play
 void playGame(Deck& deck) 
 {
     cout << deck.cardsLeft() << endl;
@@ -90,7 +90,7 @@ void playGame(Deck& deck)
             printStackReverse(hand);
             hand = stack<Card>();
             cout << " Fibonacci: " << sum << endl;
-            piles++;
+            piles++; 
             sum = 0;
         }
         //Otherwise add the card to the stack
@@ -100,17 +100,20 @@ void playGame(Deck& deck)
         }
     }
 
+    // Check if the piles count is greater than 0, and if it is, print the "Winner" message
+    if (piles > 0) 
+    {
+        cout << "\nWinner in " << piles << " piles!\n";
+    }
+
+    // If the last sum is not a fibonacci number, print the "Loser" message
     if (sum!=0) 
     {
         printStackReverse(hand);
         hand = stack<Card>();
         cout << " Loser\n";
     }
-    else 
-    {
-        cout << "\nWinner in " << piles << " piles!\n";
-    }
-}/
+}
 
 
 //Check passed value is fibo or not
