@@ -1,152 +1,120 @@
-#include "deck.h"
+#include <iostream>
 #include "card.h"
-#include <stack>
+#include "deck.h"
+using namespace std;
 
-//Function prototypes
-void playGame(Deck& deck);
-bool isFibonacci(int val);
-void printStackReverse(stack<Card> s);
+bool isFibo(int partSum) {
 
-int main()
-{
-    // Create a deck object
-    Deck deck;
+  int first = 0;
+  int second = 1;
+  int fiboSum;
 
-    int ch;
-    //Loop until exit
-    while (true) 
-    {
-        //User choices
-        cout << "Welcome to Solitaire Prime!\n1) New Deck\n2) Display Deck\n3) Shuffle Deck\n4) Play Solitaire\n5) Exit\n\nEnter choice: ";
-        cin >> ch;
-        //Switch according to choice
-        switch (ch) 
-        {
-            //Create a new deck
-            case 1:
-            deck.refreshDeck();
-            cout << "\nNew deck created\n";
-            break;
-            //Display deck
-            case 2:
-            cout << "\nDeck:\n";
-            deck.display();
-            cout << endl;
-            break;
-            //Shuffle deck of cards
-            case 3:
-            deck.shuffle();
-            cout << "\nShuffled deck created\n";
-            break;
-            //Play game
-            case 4:
-            playGame(deck);
-            break;
-            //End
-            case 5:
-            cout << "\nThank you!!!\n";
-            exit(0);
-            break;
-            default:
-            cout << "\nIncorrect choice\n";
-            break;
-        }
-        cout << endl;
-    }
-}
+  fiboSum = first + second;
 
-//Function simulate a play
-void playGame(Deck& deck) 
-{
-    cout << deck.cardsLeft() << endl;
-    int piles = 0,sum=0;
-    stack<Card> hand;
-    cout << "\nPlaying Solitaire game!!\n\n";
-    //Play game until deck cards count reach 0
-    while (true) 
-    {
-        if (deck.cardsLeft() == 0) 
-        {
-            // If the last sum is a fibonacci number, exit the game
-            if (isFibonacci(sum)) 
-            {
-                break;
-            }
-            // Otherwise, continue playing
-            else 
-            {
-                deck.refreshDeck();
-                deck.shuffle();
-            }
-        }
-        // Take a card and check the sum
-        Card c = deck.deal();
-        sum += c.getValue();
-        // If the sum is a fibonacci number, print the stack and increment the piles count
-        if (isFibonacci(sum)) 
-        {
-            hand.push(c);
-            //Display stack reverse order
-            printStackReverse(hand);
-            hand = stack<Card>();
-            cout << " Fibonacci: " << sum << endl;
-            piles++; 
-            sum = 0;
-        }
-        //Otherwise add the card to the stack
-        else 
-        {
-            hand.push(c);
-        }
-    }
+  while (fiboSum < partSum){
+  //fibonacci until cardSum
+    first = second; // 0, 1, 1 , 2
+    second = fiboSum; // 1, 1, 2, 3
+    fiboSum = first + second; // 0 + 1 = 1 , 1+ 1 = 2, 1+ 2 =3
 
-    // Check if the piles count is greater than 0, and if it is, print the "Winner" message
-    if (piles > 0) 
-    {
-        cout << "\nWinner in " << piles << " piles!\n";
-    }
+    //0,1,1,2,3,5,8,13,21,34,55
 
-    // If the last sum is not a fibonacci number, print the "Loser" message
-    if (sum!=0) 
-    {
-        printStackReverse(hand);
-        hand = stack<Card>();
-        cout << " Loser\n";
-    }
-}
-
-
-//Check passed value is fibo or not
-bool isFibonacci(int n)
-{
-  if (n == 0 || n == 1)
-  {
+  } 
+  if (fiboSum == partSum) {
     return true;
   }
-
-  int a = 0;
-  int b = 1;
-
-  while (b < n)
-  {
-    int c = a + b;
-    a = b;
-    b = c;
+  
+  else {
+    return false;
   }
-
-  return (b == n);
 }
 
+int main() {
+  srand(time(NULL));
+  int userInput = 0;
+  Deck items;
 
-//Display stack in reverse order
-void printStackReverse(stack<Card> s)
-{
-    if (s.empty())
-        return;
-    Card x = s.top();
-    s.pop();
-    printStackReverse(s);
-    x.display();
-    cout << " ";
-    s.push(x);
+  while (userInput < 5){
+
+    cout << "Welcome to Fibonacci Solitaire!\n1. New Deck\n2. Display Deck\n3. Shuffle Deck\n4. Play Solitaire\n5. Exit\nPlease input a number between 1 and 5." << endl;
+    cin >> userInput;
+    cout << endl;
+  
+
+  if (userInput == 1){
+    items.refreshDeck();
+  }
+
+  else if (userInput == 2){
+    items.display();
+  }
+
+  else if (userInput == 3){
+    items.shuffle();
+  }
+
+  else if (userInput == 4){
+    Card dealedCard;
+    int gameCounter = 0;
+    int pileCounter = 0;
+    int partSum = 0;
+    cout << "Fibonacci Solitaire!!" << endl;
+  
+    // false until topCard is 52
+    while (items.isEmpty() == false) {
+      
+      dealedCard = items.deal(); //deal one card
+      partSum += dealedCard.getValue(); //getValue of dealedcard
+      dealedCard.display();
+      gameCounter ++;
+      cout << ", ";
+
+      // value does not equal the Fibonacci number
+
+      // value equal the Fibonacci number
+      if ((isFibo(partSum) == true) && (items.isEmpty() == false)) {
+        //refresh partSum to 0
+        cout << "Fibo: " << partSum << endl;
+        // keeps track of piles
+        pileCounter ++;
+        partSum = 0;
+
+      }
+
+        //else if (item.isEMpty())&& isFibo(partSum) == false
+
+      if ((isFibo(partSum) == false) && (items.isEmpty()== true)) {
+        cout << endl;
+        cout << "Last hand value: " << partSum << endl;
+        pileCounter ++;
+        cout << "Loser in " << pileCounter << " piles!" << endl;
+        gameCounter ++;
+
+      }
+
+      else if ((isFibo(partSum) == true) && (items.isEmpty() == true)) {
+
+        pileCounter ++;
+        cout << "Fibo:" << partSum << "\nWinner in " << pileCounter << " piles!" << endl;
+        gameCounter ++;
+        cout << "Games played: " << gameCounter;
+      }
+
+      }
+    
+  }
+  
+  else if (userInput == 5){
+
+    cout << "The Game has been exited" << endl;
+    break;
+
+  }
+  else {
+    cout << "Please enter a valid integer!" << endl;
+    cin >> userInput;
+  }
+    
+  cout << "" << endl;
+   }
 }

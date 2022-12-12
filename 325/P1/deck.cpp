@@ -1,73 +1,123 @@
-//Implementation of deck class
 #include "deck.h"
-//Constructor
-Deck::Deck() 
+#include "card.h"
+#include <iostream>
+using namespace std;
+
+Deck :: Deck () //calling deck from header
 {
-	char ranks[] = { 'A','1','2','3','4','5','6','7','8','9','J','Q','K' };
-	char suits[] = { 'S','H','D','C' };
-	int k = 0;
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 13; j++)
-		{
-		deck[k++] = Card(ranks[j], suits[i]);
-		}
-	}	
-	cardsCnt = 52;
+  topCard = 0;
+  char rank[] = {'A', '2', '3', '4', '5', '6', '7', '8', '9', 'D',   
+  'J', 'Q', 'K'};
+  char suit[] = {'S', 'D', 'C', 'H'};
+
+  int suitAmount = 0;
+  for (int i = 0; i < 52; i++) {
+
+    if (i < 13) {
+      suitAmount = 0;
+    }
+
+  else if (i < 26) {
+    suitAmount = 1;
+  }
+
+  else if (i < 39) {
+    suitAmount = 2;
+  }
+
+  else if (i >= 39) {
+
+    suitAmount = 3;
+  }
+    items[i] = Card(rank[i % 13], suit[suitAmount]);
+ }
 }
-//Create a fresh deck
-void Deck::refreshDeck() 
+
+
+void Deck :: refreshDeck() //refresh deck makes a new deck, calls the original constructor
+//♠, ♣,♥, ♦
 {
-	char ranks[] = { 'A','1','2','3','4','5','6','7','8','9','J','Q','K' };
-	char suits[] = { 'S','H','D','C' };
-	int k = 0;
-	for (int i = 0; i < 4; i++) 
-	{
-		for (int j = 0; j < 13; j++)
-		{
-		deck[k++] = Card(ranks[j], suits[i]);
-		}
-	}
-	cardsCnt = 52;
+  topCard = 0;
+  char rank[] = {'A', '2', '3', '4', '5', '6', '7', '8', '9', 'D', 
+  'J', 'Q', 'K'};
+  char suit[] = {'S', 'D', 'C', 'H'};
+
+  int suitAmount = 0;
+  for (int i = 0; i < 52; i++) {
+
+  if (i < 13) {
+    suitAmount = 0;
+  }
+
+  else if (i < 26) {
+    suitAmount = 1;
+  }
+
+  else if (i < 39) {
+    suitAmount = 2;
+  }
+
+  else if (i >= 39) {
+    suitAmount = 3;
+  }
+
+    items[i] = Card(rank[i % 13], suit[suitAmount]);
+
+  }
+
 }
-//Get a card from top
-Card Deck::deal() 
+
+Card Deck :: deal() //get top of the card, index of 0?
 {
-	Card c=deck[cardsCnt - 1];
-	cardsCnt--;
-	return c;
+  
+  Card dealing = items[topCard];
+  topCard++;
+
+  return dealing;
+  
+  //create counter and need to reset counter everytime after every use and also track index
+  //for loop might work better
 }
-//Shuffle
-void Deck::shuffle() 
-{
-  srand(time(0)); // Use the current time as the seed for the random number generator
-  for (int i = 0; i < cardsCnt; i++)
-  {
-    int r = i + (rand() % (52 - i));
-    Card temp = deck[i];
-    deck[i] = deck[r];
-    deck[r] = temp;
+
+void Deck :: shuffle() { //shuffle deck using random libraries
+
+for (int i = 0; i < 100000; i++) {
+
+  int x = rand() % 52;
+  int y = rand() % 52;
+
+  Card temp = items[x];
+  items[x] = items[y];
+  items[y] = temp;
+  
   }
 }
-//Number of cards left in deck
-int Deck::cardsLeft() 
-{
-	return cardsCnt;
+  
+bool Deck :: isEmpty() {// check using length or something else
+
+  
+  if (topCard >= 52) {
+
+    return true;
+  }
+
+  else {
+    
+    return false;
+    
+  }
 }
-//Display deck
-void Deck :: display() 
-{
-	for (int i = 0; i < 52; i++) 
-	{
-		if (i % 13 == 0 && i != 0) 
-		{
-		cout << endl;
-		deck[i].display();
-		cout << " ";
-		}
-		else 
-		{
-			deck[i].display();
-			cout << " ";
-		}
-	}
+  
+void Deck :: display() { // display deck in 13 columns and 4 rows
+
+  for (int i = 1; i < 53; i++) {
+
+    items[i - 1].display();
+    cout << " ";
+    if (i % 13 == 0) {
+
+      cout << endl;
+    }
+  }
+  
 }

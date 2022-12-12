@@ -1,298 +1,375 @@
-//card.cpp
 #include "card.h"
+#include <iostream>
 using namespace std;
-Card :: Card()
+
+Card :: Card () // creates empty object card
 {
-  rank = ' ';
-  suit = ' ';
-}
-Card::Card( char r, char s )// constructor to create a card, setting the rank and suit 
-{
-  suit = r;
-  rank = s;
-}
-void Card::setCard( char r, char s)//set existing card to new values 
-{
-  suit = r;
-  rank = s;
-} 
-int Card::getValue( )// return the point value of the card. Ace = 1, 2 thru 10, Jack = 10, Queen = 10, King = 10 
-{
-  if (rank == 'A') 
-	{
-		return 1;
-	}
-		else if (rank == '2') 
-	{
-	return 2;
-	}
-	else if (rank == '3') 
-	{
-		return 3;
-	}
-	else if (rank == '4') 
-	{
-		return 4;
-	}
-	else if (rank == '5') 
-	{
-		return 5;
-	}
-	else if (rank == '6') 
-  {
-		return 6;
-	}
-	else if (rank == '7') 
-	{
-		return 7;
-	}
-	else if (rank == '8') 
-	{
-		return 8;
-	}
-	else if (rank == '9') 
-	{
-		return 9;
-	}
-	else 
-	{
-		return 10;
-	}
-}
-void Card::display( )// display the card using 2 fields… Ace of Spade:AS, Ten of Diamond:10D, Queen of Heart:QH, Three of Club:3C. (If you want to get fancy, you can use these symbols for the suit ♠, ♣, ♥, ♦)
-{
-  cout << rank << suit<<".";
+ 
+ rank = '0';
+ suit = 'T';
 }
 
+Card :: Card (char r, char s) // passes parameters to an empty card
+{
+  
+  rank = r;
+  suit = s;
+  
+}
 
-//deck.cpp
-//Implementation of deck class
+void Card::setCard(char r, char s)  // set ranks  like ace, jack, queen, kind to numbers
+// how do i set one card when i have set most of the cards to variables?
+
+{
+
+  char A = 1;
+  char J = 'D';
+  char Q = 'D';
+  char K = 'D';
+  
+}
+
+int Card :: getValue()  //getter function to get values from cards
+{
+
+  if (rank == 'A'){
+
+    return 1;
+    
+  }
+
+   else if ((rank == 'K') || (rank == 'Q') || (rank == 'J')) {
+
+     return 10;
+     
+   }
+
+   else {
+     
+    if (rank == '2') {
+    return 2;
+    }
+
+    if (rank == '3') {
+      return 3;
+    }
+
+    if (rank == '4') {
+      return 4;
+    }
+
+    if (rank == '5') {
+      return 5;
+    }
+    if (rank == '6') {
+      return 6;
+    }
+    if (rank == '7') {
+      return 7;
+    }
+    if (rank == '8') {
+      return 8;
+    }
+    if (rank == '9') {
+      return 9;
+    }
+
+    if (rank == 'D') {
+
+      return 10;
+    }
+
+    
+   }  
+
+ }
+
+
+void Card :: display() //displays one object of card for deck?
+{ 
+
+  if (rank == 'D') {
+
+    if (suit == 'S') {
+    cout << 10 << "♠";
+    }
+
+    else if (suit == 'D') {
+    cout << 10 << "♦";
+    }
+
+    else if (suit == 'H') {
+    cout << 10 << "♥";
+    }
+
+    else {
+    cout << 10 << "♣";
+    }
+  }
+
+  else if (suit == 'S') {
+  cout << rank << "♠";
+  }
+
+  else if (suit == 'D') {
+  cout << rank << "♦";
+  }
+
+  else if (suit == 'H') {
+  cout << rank << "♥";
+  }
+
+  else{
+
+    cout << rank << "♣";
+  }
+
+   //♠, ♣,♥, ♦
+  
+  // add symbols to string using a loop then print out
+}
+
 #include "deck.h"
-//Constructor
-Deck::Deck() 
+#include "card.h"
+#include <iostream>
+using namespace std;
+
+Deck :: Deck () //calling deck from header
 {
-	char ranks[] = { 'A','1','2','3','4','5','6','7','8','9','J','Q','K' };
-	char suits[] = { 'S','H','D','C' };
-	int k = 0;
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 13; j++)
-		{
-		deck[k++] = Card(ranks[j], suits[i]);
-		}
-	}	
-	cardsCnt = 52;
+  topCard = 0;
+  char rank[] = {'A', '2', '3', '4', '5', '6', '7', '8', '9', 'D',   
+  'J', 'Q', 'K'};
+  char suit[] = {'S', 'D', 'C', 'H'};
+
+  int suitAmount = 0;
+  for (int i = 0; i < 52; i++) {
+
+    if (i < 13) {
+      suitAmount = 0;
+    }
+
+  else if (i < 26) {
+    suitAmount = 1;
+  }
+
+  else if (i < 39) {
+    suitAmount = 2;
+  }
+
+  else if (i >= 39) {
+
+    suitAmount = 3;
+  }
+    items[i] = Card(rank[i % 13], suit[suitAmount]);
+ }
 }
-//Create a fresh deck
-void Deck::refreshDeck() 
+
+
+void Deck :: refreshDeck() //refresh deck makes a new deck, calls the original constructor
+//♠, ♣,♥, ♦
 {
-	char ranks[] = { 'A','1','2','3','4','5','6','7','8','9','J','Q','K' };
-	char suits[] = { 'S','H','D','C' };
-	int k = 0;
-	for (int i = 0; i < 4; i++) 
-	{
-		for (int j = 0; j < 13; j++)
-		{
-		deck[k++] = Card(ranks[j], suits[i]);
-		}
-	}
-	cardsCnt = 52;
+  topCard = 0;
+  char rank[] = {'A', '2', '3', '4', '5', '6', '7', '8', '9', 'D', 
+  'J', 'Q', 'K'};
+  char suit[] = {'S', 'D', 'C', 'H'};
+
+  int suitAmount = 0;
+  for (int i = 0; i < 52; i++) {
+
+  if (i < 13) {
+    suitAmount = 0;
+  }
+
+  else if (i < 26) {
+    suitAmount = 1;
+  }
+
+  else if (i < 39) {
+    suitAmount = 2;
+  }
+
+  else if (i >= 39) {
+    suitAmount = 3;
+  }
+
+    items[i] = Card(rank[i % 13], suit[suitAmount]);
+
+  }
+
 }
-//Get a card from top
-Card Deck::deal() 
+
+Card Deck :: deal() //get top of the card, index of 0?
 {
-	Card c=deck[cardsCnt - 1];
-	cardsCnt--;
-	return c;
+  
+  Card dealing = items[topCard];
+  topCard++;
+
+  return dealing;
+  
+  //create counter and need to reset counter everytime after every use and also track index
+  //for loop might work better
 }
-//Shuffle
-void Deck::shuffle() 
-{
-  srand(time(0)); // Use the current time as the seed for the random number generator
-  for (int i = 0; i < cardsCnt; i++)
-  {
-    int r = i + (rand() % (52 - i));
-    Card temp = deck[i];
-    deck[i] = deck[r];
-    deck[r] = temp;
+
+void Deck :: shuffle() { //shuffle deck using random libraries
+
+for (int i = 0; i < 100000; i++) {
+
+  int x = rand() % 52;
+  int y = rand() % 52;
+
+  Card temp = items[x];
+  items[x] = items[y];
+  items[y] = temp;
+  
   }
 }
-//Number of cards left in deck
-int Deck::cardsLeft() 
-{
-	return cardsCnt;
-}
-//Display deck
-void Deck :: display() 
-{
-	for (int i = 0; i < 52; i++) 
-	{
-		if (i % 13 == 0 && i != 0) 
-		{
-		cout << endl;
-		deck[i].display();
-		cout << " ";
-		}
-		else 
-		{
-			deck[i].display();
-			cout << " ";
-		}
-	}
-}
+  
+bool Deck :: isEmpty() {// check using length or something else
 
-//main.cpp
-#include "deck.h"
-#include "card.h"
-#include <stack>
+  
+  if (topCard >= 52) {
 
-//Function prototypes
-void playGame(Deck& deck);
-bool isFibonacci(int val);
-void printStackReverse(stack<Card> s);
-
-int main()
-{
-    // Create a deck object
-    Deck deck;
-
-    int ch;
-    //Loop until exit
-    while (true) 
-    {
-        //User choices
-        cout << "Welcome to Solitaire Prime!\n1) New Deck\n2) Display Deck\n3) Shuffle Deck\n4) Play Solitaire\n5) Exit\n\nEnter choice: ";
-        cin >> ch;
-        //Switch according to choice
-        switch (ch) 
-        {
-            //Create a new deck
-            case 1:
-            deck.refreshDeck();
-            cout << "\nNew deck created\n";
-            break;
-            //Display deck
-            case 2:
-            cout << "\nDeck:\n";
-            deck.display();
-            cout << endl;
-            break;
-            //Shuffle deck of cards
-            case 3:
-            deck.shuffle();
-            cout << "\nShuffled deck created\n";
-            break;
-            //Play game
-            case 4:
-            playGame(deck);
-            break;
-            //End
-            case 5:
-            cout << "\nThank you!!!\n";
-            exit(0);
-            break;
-            default:
-            cout << "\nIncorrect choice\n";
-            break;
-        }
-        cout << endl;
-    }
-}
-
-//Function simulate a play
-void playGame(Deck& deck) 
-{
-    cout << deck.cardsLeft() << endl;
-    int piles = 0,sum=0;
-    stack<Card> hand;
-    cout << "\nPlaying Solitaire game!!\n\n";
-
-    // Play game until deck cards count reach 0
-    while (true) 
-    {
-        if (deck.cardsLeft() == 0) 
-        {
-            // If the last sum is a fibonacci number, exit the game
-            if (isFibonacci(sum)) 
-            {
-                break;
-            }
-            // Otherwise, continue playing
-            else 
-            {
-                deck.refreshDeck();
-                deck.shuffle();
-            }
-        }
-
-        // Take a card and check the sum
-        Card c = deck.deal();
-        sum += c.getValue();
-
-        // If the sum is a fibonacci number, print the stack and increment the piles count
-        if (isFibonacci(sum)) 
-        {
-            hand.push(c);
-            // Display stack in reverse order
-            printStackReverse(hand);
-            hand = stack<Card>();
-            cout << " Fibonacci: " << sum << endl;
-            piles++; 
-            sum = 0;
-        }
-        // Otherwise add the card to the stack
-        else 
-        {
-            hand.push(c);
-        }
-    }
-
-    // Check if the piles count is greater than 0, and if it is, print the "Winner" message
-    if (piles > 0) 
-    {
-        cout << "\nWinner in " << piles << " piles!\n";
-    }
-
-    // If the last sum is not a fibonacci number, print the "Loser" message
-    else 
-    {
-        printStackReverse(hand);
-        hand = stack<Card>();
-        cout << " Loser\n";
-    }
-}
-
-
-//Check passed value is fibo or not
-bool isFibonacci(int n)
-{
-  if (n == 0 || n == 1)
-  {
     return true;
   }
 
-  int a = 0;
-  int b = 1;
-
-  while (b < n)
-  {
-    int c = a + b;
-    a = b;
-    b = c;
+  else {
+    
+    return false;
+    
   }
+}
+  
+void Deck :: display() { // display deck in 13 columns and 4 rows
 
-  return (b == n);
+  for (int i = 1; i < 53; i++) {
+
+    items[i - 1].display();
+    cout << " ";
+    if (i % 13 == 0) {
+
+      cout << endl;
+    }
+  }
+  
 }
 
+#include <iostream>
+#include "card.h"
+#include "deck.h"
+using namespace std;
 
-//Display stack in reverse order
-void printStackReverse(stack<Card> s)
-{
-    if (s.empty())
-        return;
-    Card x = s.top();
-    s.pop();
-    printStackReverse(s);
-    x.display();
-    cout << " ";
-    s.push(x);
+bool isFibo(int partSum) {
+
+  int first = 0;
+  int second = 1;
+  int fiboSum;
+
+  fiboSum = first + second;
+
+  while (fiboSum < partSum){
+  //fibonacci until cardSum
+    first = second; // 0, 1, 1 , 2
+    second = fiboSum; // 1, 1, 2, 3
+    fiboSum = first + second; // 0 + 1 = 1 , 1+ 1 = 2, 1+ 2 =3
+
+    //0,1,1,2,3,5,8,13,21,34,55
+
+  } 
+  if (fiboSum == partSum) {
+    return true;
+  }
+  
+  else {
+    return false;
+  }
+}
+
+int main() {
+  srand(time(NULL));
+  int userInput = 0;
+  Deck items;
+
+  while (userInput < 5){
+
+    cout << "Welcome to Fibonacci Solitaire!\n1. New Deck\n2. Display Deck\n3. Shuffle Deck\n4. Play Solitaire\n5. Exit\nPlease input a number between 1 and 5." << endl;
+    cin >> userInput;
+    cout << endl;
+  
+
+  if (userInput == 1){
+    items.refreshDeck();
+  }
+
+  else if (userInput == 2){
+    items.display();
+  }
+
+  else if (userInput == 3){
+    items.shuffle();
+  }
+
+  else if (userInput == 4){
+    Card dealedCard;
+    int gameCounter = 0;
+    int pileCounter = 0;
+    int partSum = 0;
+    cout << "Fibonacci Solitaire!!" << endl;
+  
+    // false until topCard is 52
+    while (items.isEmpty() == false) {
+      
+      dealedCard = items.deal(); //deal one card
+      partSum += dealedCard.getValue(); //getValue of dealedcard
+      dealedCard.display();
+      gameCounter ++;
+      cout << ", ";
+
+      // value does not equal the Fibonacci number
+
+      // value equal the Fibonacci number
+      if ((isFibo(partSum) == true) && (items.isEmpty() == false)) {
+        //refresh partSum to 0
+        cout << "Fibo: " << partSum << endl;
+        // keeps track of piles
+        pileCounter ++;
+        partSum = 0;
+
+      }
+
+        //else if (item.isEMpty())&& isFibo(partSum) == false
+
+      if ((isFibo(partSum) == false) && (items.isEmpty()== true)) {
+        cout << endl;
+        cout << "Last hand value: " << partSum << endl;
+        pileCounter ++;
+        cout << "Loser in " << pileCounter << " piles!" << endl;
+        gameCounter ++;
+
+      }
+
+      else if ((isFibo(partSum) == true) && (items.isEmpty() == true)) {
+
+        pileCounter ++;
+        cout << "Fibo:" << partSum << "\nWinner in " << pileCounter << " piles!" << endl;
+        gameCounter ++;
+        cout << "Games played: " << gameCounter;
+      }
+
+      }
+    
+  }
+  
+  else if (userInput == 5){
+
+    cout << "The Game has been exited" << endl;
+    break;
+
+  }
+  else {
+    cout << "Please enter a valid integer!" << endl;
+    cin >> userInput;
+  }
+    
+  cout << "" << endl;
+   }
 }
