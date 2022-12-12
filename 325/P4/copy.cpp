@@ -1,224 +1,162 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+// Samuel Lee
+// Class (CECS 325-02)
+// Project Name ( Prog 4 SortRace Thread
+// Due Date 10/20/22
+//
+// I certify that this program is my own original work. I did not copy any part
+// of this program from any other source. I further certify that I typed each
+// and every line of code in this program.
 
-#if defined (WIN32) || (_WIN64)
+#include <fstream> // this is file stream
+#include <vector>
+#include <iostream> //input output stream
+#include <pthread.h> // from the library using a -lpthread for linker
+#include <cstring> // includes a 
+using namespace std;
 
-#include <windows.h>
-#define pthread_t DWORD
-#define pthread_create(THREAD_ID_PTR, ATTR, ROUTINE, PARAMS) CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)ROUTINE,(void*)PARAMS,0,THREAD_ID_PTR)
-#define sleep(ms) Sleep(ms)
-
-#else // Linux
-
-#include <pthread.h>
-#include <unistd.h>
-
-#endif
-
-
-
-// thread parameters
-struct TASK
-{
-	int low;
-	int high;
-	int busy;
-	int* a;
+struct arguments {
+  int *arr;
 };
 
-// merge function for merging two parts
-void merge(int* a, int low, int mid, int high)
-{
-
-	// n1 is size of left side and n2 is size of right side
-	int n1 = mid - low + 1;
-	int n2 = high - mid;
-
-	int* left = (int*)malloc(n1 * sizeof(int));
-	int* right = (int*)malloc(n2 * sizeof(int));
-
-	int i;
-	int j;
-
-	// storing values in left part
-	for (i = 0; i < n1; i++)
-		left[i] = a[i + low];
-
-	// storing values in right part
-	for (i = 0; i < n2; i++)
-		right[i] = a[i + mid + 1];
-
-	int k = low;
-
-	i = j = 0;
-
-	// merge left and right in ascending order
-	while (i < n1 && j < n2)
-	{
-		if (left[i] <= right[j])
-			a[k++] = left[i++];
-		else
-			a[k++] = right[j++];
-	}
-
-	// insert remaining values from left
-	while (i < n1)
-		a[k++] = left[i++];
-
-	// insert remaining values from right
-	while (j < n2)
-		a[k++] = right[j++];
-
-	free(left);
-	free(right);
+void *insertionSort(void *ptr) {
+  arguments *arg = (arguments *)ptr;
+  arg->arr; // this is arr[]
+  cout << "start" << endl;
+  for (int j = 1; j < 125000; j++) {
+    int key = arg->arr[j];
+    int i = j - 1;
+    while (i >= 0 && arg->arr[i] > key) {
+      arg->arr[i + 1] = arg->arr[i];
+      i = i - 1;
+    }
+    arg->arr[i + 1] = key;
+  }
+  cout << "ending" << endl;
+  return NULL;
 }
 
-// merge sort function
-void merge_sort(int* a, int low, int high)
+void merge(int arr[], int left, int right) // left is the beginning of the array right is the end of the array
 {
+    int i, j, k;
+    //fix middle
+    int mid = (left+right)/2; // middle
+    int size = right - left;
+    int *temp = new int[size]; //dynamic means they'll be moving around
+ 
+    /* Merge the temp arrays back into arr[l..r]*/
+    i = left; 
+    j = mid; 
+    k = 0; 
+    while (i < mid && j < right) {
+        if (arr[i] <= arr[j]) {
+            temp[k] = arr[i];
+            i++;
+        }
+        else {
+            temp[k] = arr[j];
+            j++;
+        }
+        k++;
+    }
+ 
+    //Copy the remaining if one is empty
+    while (i < mid) {
+        temp[k] = arr[i];
+        i++;
+        k++;
+    }
+    while (j < right) {
+        temp[k] = arr[j];
+        j++;
+        k++;
+    }
+    //assumption is we have a fully sorted temporary array, now how do we return that 
+    //copy temp into orignal array
+    /*function from ctring */
+    memcpy( arr+left, temp, sizeof(int)*size ); //need to know how big my data type -- sizeof(4*size) gets # of bytes
+    delete temp;
+    
 
-	// calculating mid point of array
-	int mid = low + (high - low) / 2;
-
-	if (low < high)
-	{
-		// call 1st half
-		merge_sort(a, low, mid);
-
-		// call 2nd half
-		merge_sort(a, mid + 1, high);
-
-		// merge 1st and 2nd halves
-		merge(a, low, mid, high);
-	}
 }
 
-// thread function
-void* merge_sort_thread(void* arg)
-{
-	TASK* task = (TASK*)arg;
-	int low;
-	int high;
+  int main(int argc, char *argv[]) {
+    if (argc < 3) {
+      cout << "Please include input filename and output filename in param "
+              "list.\n";
+      cout << "Example:\n";
+      cout << "     % mySortA numbers.txt mySorted.txt\n";
+      exit(EXIT_SUCCESS);
+    }
 
-	// calculating low and high
-	low = task->low;
-	high = task->high;
+    const int MAX = 1000000;
+    ofstream fout;
+    ifstream fin;
+    int n;
 
-	// evaluating mid point
-	int mid = low + (high - low) / 2;
+    int nums[MAX];
+    int ind = 0;  //size?
 
-	if (low < high)
-	{
-		merge_sort(task->a, low, mid);
-		merge_sort(task->a, mid + 1, high);
-		merge(task->a, low, mid, high);
-	}
-	task->busy = 0;
-	return 0;
-}
+    fin.open(argv[1]);
+    while (fin >> n) {
+      nums[ind++] = n;
+    }
 
-// driver
-int main(int argc, char** argv)
-{
-	char* sz;
+    int bounds = 125000; // 125000-1
+    arguments argList[8];
+    for (int i = 0; i < 8; i++) {
+      argList[i].arr = nums + (i * bounds);
+    }
 
-	int MAX_ARRAY_ELEMENTS = 2000;
-	int MAX_THREADS = 1;
+    pthread_t thread0, thread1, thread2, thread3, thread4, thread5, thread6, thread7;
+    int iret0, iret1, iret2, iret3, iret4, iret5, iret6, iret7;
+    iret0 = pthread_create(&thread0, NULL, insertionSort, (void *)&argList[0]);
+    iret1 = pthread_create(&thread1, NULL, insertionSort, (void *)&argList[1]);
+    iret2 = pthread_create(&thread2, NULL, insertionSort, (void *)&argList[2]);
+    iret3 = pthread_create(&thread3, NULL, insertionSort, (void *)&argList[3]);
+    iret4 = pthread_create(&thread4, NULL, insertionSort, (void *)&argList[4]);
+    iret5 = pthread_create(&thread5, NULL, insertionSort, (void *)&argList[5]);
+    iret6 = pthread_create(&thread6, NULL, insertionSort, (void *)&argList[6]);
+    iret7 = pthread_create(&thread7, NULL, insertionSort, (void *)&argList[7]);
 
-	// parse command line arguments
-	for (--argc, ++argv; argc > 0; --argc, ++argv)
-	{
-		sz = *argv;
-		if (*sz != '-')
-			break;
+    pthread_join(thread0, NULL);
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+    pthread_join(thread3, NULL);
+    pthread_join(thread4, NULL);
+    pthread_join(thread5, NULL);
+    pthread_join(thread6, NULL);
+    pthread_join(thread7, NULL);
 
-		switch (sz[1])
-		{
-		case 'A':  // array max
-			MAX_ARRAY_ELEMENTS = atoi(sz + 2);
-			break;
+    // merging
+    int indices[8];
+    for( int i = 0; i < 8; i++){
+      indices[i] = (i*bounds);
+      cout << indices[i] <<endl; }
 
-		case 'T':  // thread count
-			MAX_THREADS = atoi(sz + 2);
-			break;
-		}
-	}
-
-	printf("\n\nArray[%d]\nThreads[%d]", MAX_ARRAY_ELEMENTS, MAX_THREADS);
-
-	// allocate the array
-	int* array = (int*)malloc(sizeof(int) * MAX_ARRAY_ELEMENTS);
-
-	// generating random values in array
-	srand(clock());
-	for (int i = 0; i < MAX_ARRAY_ELEMENTS; i++)
-		array[i] = rand();
-
-	printf("\n\nArray Randomized");
-
-	pthread_t* threads = (pthread_t*)malloc(sizeof(pthread_t) * MAX_THREADS);
-	TASK* tasklist = (TASK*)malloc(sizeof(TASK) * MAX_THREADS);
-
-	int len = MAX_ARRAY_ELEMENTS / MAX_THREADS;
-
-	TASK* task;
-	int low = 0;
-
-	clock_t time = clock();
-
-	for (int i = 0; i < MAX_THREADS; i++, low += len)
-	{
-		task = &tasklist[i];
-		task->low = low;
-		task->high = low + len - 1;
-		if (i == (MAX_THREADS - 1))
-			task->high = MAX_ARRAY_ELEMENTS - 1;
-	}
-
-	// create the threads
-	for (int i = 0; i < MAX_THREADS; i++)
-	{
-		task = &tasklist[i];
-		task->a = array;
-		task->busy = 1;
-		pthread_create(&threads[i], 0, merge_sort_thread, task);
-	}
-
-	// wait for all threads
-	for (int i = 0; i < MAX_THREADS; i++)
-		while (tasklist[i].busy)
-			sleep(50);
+    int first = 0;
+    int second;
+    while (first <= 6) {
+      second = first + 1;
+      merge(nums, indices[first], indices[second]); // ( arr l r )
+      first = second + 1;
+    }
 
 
-	TASK* taskm = &tasklist[0];
-	for (int i = 1; i < MAX_THREADS; i++)
-	{
-		TASK* task = &tasklist[i];
-		merge(taskm->a, taskm->low, task->low - 1, task->high);
-	}
+    //subsiary merges
+    merge( nums, indices[0], 250000); //4
+    merge( nums, 250000, 500000); //4
+    merge( nums, 500000, 750000); //2
+    merge( nums, 250000, MAX);  //2
+    //final merge last big 1
+    merge( nums, indices[0], MAX); 
 
-	printf("\n\nSorted in %f Seconds", (clock() - time) / 1000.0L);
 
-	int last = 0;
-	for (int i = 0; i < MAX_ARRAY_ELEMENTS; i++)
-	{
-		if (array[i] < last)
-		{
-			printf("\n\nArray Not Sorted");
-			return 0;
-		}
-		last = array[i];
-	}
-
-	printf("\n\nArray Sorted");
-	if (MAX_ARRAY_ELEMENTS < 50)
-		for (int i = 0; i < MAX_ARRAY_ELEMENTS; i++)
-			printf(" %d", array[i]);
-	printf("\n");
-
-	free(tasklist);
-	free(threads);
-
-	return 0;
-}
+    //file out
+    fout.open(argv[2], ios::out | ios::trunc);
+    for (int i = 0; i < ind - 1; i++)
+      fout << nums[i] << endl;
+    fout << nums[ind - 1] <<endl;// to get no 1mil1
+    fout.close();
+    fin.close();
+    return 0;
+  }

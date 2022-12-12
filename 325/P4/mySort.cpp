@@ -1,113 +1,137 @@
-#include <bits/stdc++.h>
-#include <iostream>
-#include <fstream>
+
+#include <fstream> 
 #include <vector>
-#include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <thread>
-#include <unistd.h>
+#include <iostream> 
+#include <pthread.h> 
+#include <cstring> 
 using namespace std;
 
-class qs
+struct arguments
 {
-    public:
-        int* c_arr;
-        int c_low;
-        int c_high;
-
-        qs(int* arr, int low, int high)
-        {
-            c_arr = arr;
-            c_low = low;
-            c_high = high;
-        }
+    int *arr;
 };
-  
 
-void swap(int* a, int* b)
-{
-    int temp = *a;
-    *a = *b;
-    *b = temp;
+void *insertionSort(void *ptr) {
+  arguments *arg = (arguments *)ptr;
+  int *arr = arg->arr; // this is arr[]
+  for (int j = 1; j < 125000; j++) {
+    int key = arr[j];
+    int i = j - 1;
+    while (i >= 0 && arr[i] > key) {
+      arr[i + 1] = arr[i];
+      i = i - 1;
+    }
+    arr[i + 1] = key;
+  }
+  return NULL;
 }
 
-int partition(int arr[], int low, int high)
-{
-    int pivot = arr[high]; 
-    int i = (low-1); 
   
-    for (int j = low; j <= high-1; j++) {
-        if (arr[j] < pivot) {
-            i++; 
-            swap(&arr[i], &arr[j]);
+void merge(int arr[], int left, int right) {
+    int mid = (left+right)/2; // middle
+    int size = right - left;
+    int *temp = new int[size]; // dynamic array
+
+    /* Merge the temp arrays back into arr[left..right] */
+    int i = left; 
+    int j = mid; 
+    int k = 0; 
+    while (i < mid && j < right) {
+        if (arr[i] <= arr[j]) {
+            temp[k++] = arr[i++];
+        } else {
+            temp[k++] = arr[j++];
         }
     }
-    swap(&arr[i+1], &arr[high]);
-    return (i+1);
-}
 
-void quickSort(int arr[], int low, int high)
-{
-    if (low < high) {
-        int p = partition(arr, low, high);
-        quickSort(arr, low, p-1);
-        quickSort(arr, p+1, high);
+    // Copy the remaining elements if one of the subarrays is empty
+    while (i < mid) temp[k++] = arr[i++];
+    while (j < right) temp[k++] = arr[j++];
+
+    // Copy the sorted temp array into the original array
+    for (int i = 0; i < size; i++) {
+        arr[left+i] = temp[i];
     }
-}
 
-void* qs_thread(void* qsObj)
-{
-    quickSort(((qs*)qsObj)-> c_arr, ((qs*)qsObj)-> c_low, ((qs*)qsObj)-> c_high);
-    // delete ((qs*)qsObj);
-    return nullptr;
+    delete[] temp; // Use array delete to avoid memory leak
 }
-  
-
 
 int main(int argc, char* argv[])
 {
     if (argc < 3)
-	{
-		cout << "Please include input filename and output filename in param list.\n";
-		cout << "Example:\n";
-		cout << "     % mySort numbers.txt mySorted.txt\n";
-		exit(EXIT_SUCCESS);
-	}
+    {
+        cout << "Please include input filename and output filename in param list.\n";
+        cout << "Example:\n";
+        cout << "     % mySort numbers.txt mySorted.txt\n";
+        exit(EXIT_SUCCESS);
+    }
     
     const int MAX = 1000000;
-    const int THREAD_MAX = 50;
-  	ofstream fout;
-	ifstream fin;
-	int n;
-	
-	int v[MAX];
-	int count = 0;
+    const int THREAD_MAX = 125000;
+    ofstream fout;
+    ifstream fin;
+    int n;
+    
+    int v[MAX];
+    int count = 0;
+    
+    fin.open(argv[1]);
+    while (fin >> n)
+    {
+        v[count++] = n; // insert a number into the array and increase the index
+    }
 
+    arguments argList[8];
+    for (int i = 0; i < 8; i++) {
+      argList[i].arr = v + (i * THREAD_MAX);
+    }
+    
+    // Create 8 threads to sort 8 different subsets of the array
     pthread_t thread0, thread1, thread2, thread3, thread4, thread5, thread6, thread7;
     int iret0, iret1, iret2, iret3, iret4, iret5, iret6, iret7;
+    iret0 = pthread_create(&thread0, NULL, insertionSort, (void *)&argList[0]);
+    iret1 = pthread_create(&thread1, NULL, insertionSort, (void *)&argList[1]);
+    iret2 = pthread_create(&thread2, NULL, insertionSort, (void *)&argList[2]);
+    iret3 = pthread_create(&thread3, NULL, insertionSort, (void *)&argList[3]);
+    iret4 = pthread_create(&thread4, NULL, insertionSort, (void *)&argList[4]);
+    iret5 = pthread_create(&thread5, NULL, insertionSort, (void *)&argList[5]);
+    iret6 = pthread_create(&thread6, NULL, insertionSort, (void *)&argList[6]);
+    iret7 = pthread_create(&thread7, NULL, insertionSort, (void *)&argList[7]);
 
-    fin.open(argv[1]);
-    while (fin >> n )
-	{
-		v[count++] = n;	// insert a number into the arary and increase the index
-	}
+    pthread_join(thread0, NULL);
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+    pthread_join(thread3, NULL);
+    pthread_join(thread4, NULL);
+    pthread_join(thread5, NULL);
+    pthread_join(thread6, NULL);
+    pthread_join(thread7, NULL);
 
+    // merging
+    int indices[8];
+    for( int i = 0; i < 8; i++){
+      indices[i] = (i*THREAD_MAX);
 
-    iret0 = pthread_create(&thread0, NULL, qs_thread, new qs(&v[THREAD_MAX],0,THREAD_MAX));
-    // iret1 = pthread_create(&thread1, NULL, qs_thread, new qs(&v[THREAD_MAX * 2],0,THREAD_MAX*2));
-    // iret2 = pthread_create(&thread2, NULL, qs_thread, new qs(&v[THREAD_MAX * 3],0,THREAD_MAX*3));
-    // iret3 = pthread_create(&thread3, NULL, qs_thread, new qs(&v[THREAD_MAX * 4],0,THREAD_MAX*4));
-    // iret4 = pthread_create(&thread4, NULL, qs_thread, new qs(&v[THREAD_MAX * 5],0,THREAD_MAX*5));
-    // iret5 = pthread_create(&thread5, NULL, qs_thread, new qs(&v[THREAD_MAX * 6],0,THREAD_MAX*6));
-    // iret6 = pthread_create(&thread6, NULL, qs_thread, new qs(&v[THREAD_MAX * 7],0,THREAD_MAX*7));
-    // iret7 = pthread_create(&thread7, NULL, qs_thread, new qs(&v[THREAD_MAX * 8],0,THREAD_MAX*8));
-    // cout << iret0 << iret1 << iret2 << iret3 << iret4 << iret5 << iret6 << iret7 << endl;
+    int first = 0;
+    int second;
+    while (first <= 6) {
+      second = first + 1;
+      merge(v, indices[first], indices[second]); // ( arr l r )
+      first = second + 1;
+    }
+
+    // merge
+    merge(v, indices[0], 250000); //4
+    merge(v, 250000, 500000); //4
+    merge(v, 500000, 750000); //2
+    merge(v, 250000, MAX);  //2
+    merge(v, indices[0], MAX); 
+
     
     fout.open(argv[2], ios::out | ios::trunc);
-    for (int i = 0; i < MAX; i++)
-    fout << v[i]<<endl;
-
+    for (int i = 0; i < count - 1; i++)
+        fout << v[i] <<endl;
+    fout << v[count - 1] <<endl;
     fout.close();
     fin.close();
     return 0;
