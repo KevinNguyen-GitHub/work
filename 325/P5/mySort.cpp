@@ -42,7 +42,34 @@ void quickSort(int arr[], int low, int high)
     }
 }
 
+void merge(int arr[], int left, int right) {
+    int mid = (left+right)/2; // middle
+    int size = right - left;
+    int *temp = new int[size]; // dynamic array
 
+    /* Merge the temp arrays back into arr[left..right] */
+    int i = left; 
+    int j = mid; 
+    int k = 0; 
+    while (i < mid && j < right) {
+        if (arr[i] <= arr[j]) {
+            temp[k++] = arr[i++];
+        } else {
+            temp[k++] = arr[j++];
+        }
+    }
+
+    // Copy the remaining elements if one of the subarrays is empty
+    while (i < mid) temp[k++] = arr[i++];
+    while (j < right) temp[k++] = arr[j++];
+
+    // Copy the sorted temp array into the original array
+    for (int i = 0; i < size; i++) {
+        arr[left+i] = temp[i];
+    }
+
+    delete[] temp; // Use array delete to avoid memory leak
+}
 
 int main(int argc, char* argv[])
 {
@@ -55,7 +82,7 @@ int main(int argc, char* argv[])
 	}
     
     const int MAX = 1000000;
-    const int THREAD_MAAX = 125000;
+    const int THREAD_MAX = 125000;
   	ofstream fout;
 	ifstream fin;
 	int n;
@@ -76,14 +103,14 @@ int main(int argc, char* argv[])
       argList[i].arr = v + (i * THREAD_MAX);
     }
 
-    thread thread0(&quickSort,a1.data(),0,THREAD_MAX -1);
-    thread thread1(&quickSort,a2.data(),THREAD_MAX,THREAD_MAX*2 -1);
-    thread thread2(&quickSort,a3.data(),THREAD_MAX*2,THREAD_MAX*3 -1);
-    thread thread3(&quickSort,a4.data(),THREAD_MAX*3,THREAD_MAX*4 -1);
-    thread thread4(&quickSort,a5.data(),THREAD_MAX*4,THREAD_MAX*5 -1);
-    thread thread5(&quickSort,a6.data(),THREAD_MAX*5,THREAD_MAX*6 -1);
-    thread thread6(&quickSort,a7.data(),THREAD_MAX*6,THREAD_MAX*7 -1);
-    thread thread7(&quickSort,a8.data(),THREAD_MAX*7,MAX -1);
+    thread thread0(quickSort,argList[0],0,THREAD_MAX);
+    thread thread1(quickSort,argList[1],0,THREAD_MAX);
+    thread thread2(quickSort,argList[2],0,THREAD_MAX);
+    thread thread3(quickSort,argList[3],0,THREAD_MAX);
+    thread thread4(quickSort,argList[4],0,THREAD_MAX);
+    thread thread5(quickSort,argList[5],0,THREAD_MAX);
+    thread thread6(quickSort,argList[6],0,THREAD_MAX);
+    thread thread7(quickSort,argList[7],0,THREAD_MAX);
 
     // Start all threads
     thread0.join();

@@ -19,14 +19,12 @@ void remove_punctuation(string& s)
 	}
 	s = out;
 }
-void remove_captization()
-{
 
-}
 void remove_double_quotes(string& s)
 {
 	s.erase(remove(s.begin(), s.end(), '\"'), s.end());
 }
+
 char to_lower(char c)
 {
 	return std::tolower(c);
@@ -36,11 +34,13 @@ string convert_to_lower(string s)
 	std::transform(s.begin(), s.end(), s.begin(), to_lower) ;
 	return s;
 }
+
 bool check_alpha(unsigned char ch)
 {	 
 	bool bRes = isalpha(ch) || ch == '-' || ch == '\'';
 	return !bRes;
 }
+
 bool is_word_valid(string& s)
 {
 	/*
@@ -70,6 +70,7 @@ bool is_word_valid(string& s)
 			bValid = false;
 	return bValid;
 }
+
 void populate_word_list(string filepath,vector<string>& out)
 {
 	fstream new_file;
@@ -138,8 +139,10 @@ int main(int argc, char** argv)
 {
     if (argc < 3)
     {
-        cout << "Error :invalid arguments are passed" << endl;
-        return -1;
+        cout << "Please include input filename and output filename in param list.\n";
+		cout << "Example:\n";
+		cout << "     % spellchecker american-english.txt flatland.txt\n";
+		exit(EXIT_SUCCESS);
     }
 
 
@@ -177,6 +180,4 @@ int main(int argc, char** argv)
 	{
 		cout << it->first << " - " << it->second << endl;
 	}
-
-
 }
