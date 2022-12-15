@@ -29,8 +29,9 @@ void removeQuotes(string& s)
 
 char toLower(char c)
 {
-	return std::tolower(c);
+	return tolower(c);
 }
+
 string convertLower(string s)
 {
 	std::transform(s.begin(), s.end(), s.begin(), toLower) ;
@@ -39,8 +40,8 @@ string convertLower(string s)
 
 bool checkAlpha(unsigned char ch)
 {	 
-	bool bRes = isalpha(ch) || ch == '-' || ch == '\'';
-	return !bRes;
+	bool filler = isalpha(ch) || ch == '-' || ch == '\'';
+	return !filler;
 }
 
 bool checkValid(string& s)
@@ -54,7 +55,6 @@ bool checkValid(string& s)
 	if(find_if(s.begin(), s.end(), checkAlpha) == s.end())
 		valid = true;
 		
-	//A word must start with a letter
 		if (isalpha(s[0]) == false)
 			valid = false;
 	return valid;
@@ -106,7 +106,7 @@ vector<string> duplicateWord(string str)
 			word = word + x;
 		}
 	}
-	//cout << word << endl;
+	
 	if (checkValid(word))
 		out.push_back(word);
 
