@@ -5,10 +5,29 @@
 #include <map>
 #include <algorithm>
 #include <regex>
-
 using namespace std;
 
 vector<string> duplicateWord(string str);
+
+void removePunctuations(string& s)
+{
+    string punctuations = ".!?";
+
+    auto pos = s.find_first_of(punctuations);
+
+    while (pos != string::npos)
+    {
+        s.erase(pos, 1);
+
+        pos = s.find_first_of(punctuations);
+    }
+}
+
+
+void removeQuotes(string& s)
+{
+	s.erase(remove(s.begin(), s.end(), '\"'), s.end());
+}
 
 char toLower(char c)
 {
@@ -17,144 +36,131 @@ char toLower(char c)
 
 string convertLower(string s)
 {
-	std::transform(s.begin(), s.end(), s.begin(), toLower) ;
+	transform(s.begin(), s.end(), s.begin(), toLower) ;
 	return s;
 }
 
-void removePunctiation(string& s)
-{
-	string out = " ";
-	for (auto& c : s)
-	{
-		bool bPunc = (c == '.' || c == '!' || c == '?' || c == ',');
-		if (!bPunc)
-			out += c;
-	}
-	s = out;
-}
-
-void removeQuotes(string& s)
-{
-	s.erase(remove(s.begin(), s.end(), '\"'), s.end());
-}
-
 bool checkAlpha(unsigned char ch)
-{	 
-	bool alpha = isalpha(ch) || ch == '-' || ch == '\'';
-	return !alpha;
-}
-
-bool checkValid(string& s)
 {
-	removePunctiation(s);
-	removeQuote(s);
-
-	bool valid = false;
-
-	if(find_if(s.begin(), s.end(), checkAlpha) == s.end())
-		valid = true;
-		
-		if (isalpha(s[0]) == false)
-			valid = false;
-
-	return valid;
+    return !std::isalnum(ch) && ch != '-' && ch != '\'';
 }
+
+
+bool validWord(string& s)
+{
+    s.erase(std::remove_if(s.begin(), s.end(), checkAlpha), s.end());
+    return !s.empty() && std::isalpha(s[0]);
+}
+
 
 void populate(string filepath, vector<string>& out)
 {
-	fstream file;
-	std::string line;
-	int i = 0;
-	
-	file.open(filepath, ios::in);
-	if (!file)
-		cout << "No such file";
-	else {
-		char ch;
-		while (!file.eof())
-		{
-			getline(file, line);
-			vector<string> w = duplicateWord(line);
-			out.insert(out.end(), w.begin(), w.end());
-			i++;
-		}
-	}
-	file.close();
+    // Use std::ifstream to read the input file
+    std::ifstream file(filepath);
+
+    // Check if the file was successfully opened
+    if (file.is_open())
+    {
+        // Read each line from the file
+        std::string line;
+        while (std::getline(file, line))
+        {
+            // Use duplicateWord to find all duplicate words in the line
+            vector<string> w = duplicateWord(line);
+
+            // Add the duplicate words to the output vector
+            out.insert(out.end(), w.begin(), w.end());
+        }
+
+        // Close the file
+        file.close();
+    }
+    else
+    {
+        // Print an error message if the file could not be opened
+        std::cout << "Error: Could not open file " << filepath << std::endl;
+    }
 }
+
 
 vector<string> duplicateWord(string str)
 {
-	vector<string> out;
-	string word = "";
-	for (auto x : str)
-	{
-		if (x == ' ')
-		{
-			//cout << word << endl;
-			if (checkValid(word))
-			{
-				out.push_back(word);
-				word = "";
-			}
-			else
-			{
-				int i = 10;
-				word = "";
-			}
-		}
-		else {
-			word = word + x;
-		}
-	}
+    // Create a vector to hold the duplicate words
+    vector<string> out;
 
-	if (checkValid(word))
-		out.push_back(word);
+    // Use std::stringstream to extract words from the input string
+    std::stringstream ss(str);
 
-	return out;
-}
-int main(int argc, char** argv)
-{
-    if (argc < 3)
+    // Read each word from the stringstream
+    std::string word;
+    while (ss >> word)
     {
-        cout << "Please include input filename and output filename in param list.\n";
-		cout << "Example:\n";
-		cout << "     % spellchecker american-english.txt flatland.txt\n";
-		exit(EXIT_SUCCESS);
+        // Check if the word is valid and add it to the output vector
+        if (validWord(word))
+        {
+            out.push_back(word);
+        }
     }
 
+    return out;
+}
 
+int main(int argc, char** argv)
+{
+    // Check if the correct number of arguments were provided
+    if (argc < 3)
+    {
+        std::cout << "Please include input filename and output filename in param list.\n";
+        std::cout << "Example:\n";
+        std::cout << "     % spellchecker american-english.txt flatland.txt\n";
+        return 0;
+    }
+
+    // Get the file paths from the command line arguments
     string dictionary = argv[1];
     string txt = argv[2];
 
-    vector<string> word_dict;
-    vector<string> word_file;
+    // Create vectors to hold the words from the dictionary and input file
+    vector<string> dict;
+    vector<string> file;
 
+    // Populate the vectors with words from the dictionary and input file
+    populate(dictionary, dict);
+    populate(txt, file);
 
-	convertLower("Wood");
-	populate(dictionary, word_dict);
-	populate(txt, word_file);
+    // Create a map to hold the misspelled words and their frequencies
+    std::map<string, int> misspelledWords;
 
-	map<string, int> misspelledWord;
-	for (string word : word_file)
-	{
-		word = convertLower(word);
-		if (find(word_dict.begin(), word_dict.end(), word) == word_dict.end())
-		{
-			map<string, int>::iterator it = misspelledWord.find(word);
-			if (it == misspelledWord.end())
-			{
-				misspelledWord.insert(std::pair<string,int>(word,1));
-			}
-			else
-			{
-				misspelledWord[word] = it->second + 1;
-			}
-		}
-	}
+    // Loop through the words from the input file
+    for (const string& word : file)
+    {
+        // Convert the word to lowercase and check if it is not in the dictionary
+        string lowercaseWord = convertLower(word);
+        if (std::find(dict.begin(), dict.end(), lowercaseWord) == dict.end())
+        {
+            // Check if the word is already in the map
+            auto it = misspelledWords.find(lowercaseWord);
+            if (it == misspelledWords.end())
+            {
+                // Add the word to the map with a frequency of 1
+                misspelledWords.insert({lowercaseWord, 1});
+            }
+            else
+            {
+                // Increment the frequency of the word in the map
+                misspelledWords[lowercaseWord] = it->second + 1;
+            }
+        }
+    }
 
-	cout << "Misspelled words:" << misspelledWord.size() << endl;
-	for (map<string, int>::iterator it = misspelledWord.begin(); it != misspelledWord.end(); it++)
-	{
-		cout << it->first << " - " << it->second << endl;
-	}
+    // Print the number of misspelled words
+    std::cout << "Misspelled words: " << misspelledWords.size() << std::endl;
+
+    // Print the misspelled words and their frequencies
+    for (const auto& [word, frequency] : misspelledWords)
+    {
+        std::cout << word << " - " << frequency << std::endl;
+    }
+
+    return 0;
 }
