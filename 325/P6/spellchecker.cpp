@@ -7,10 +7,12 @@
 #include <regex>
 
 using namespace std;
-vector<string> removeDupWord(string str);
-void remove_punctuation(string& s)
+
+vector<string> duplicateWord(string str);
+
+void removePunctiation(string& s)
 {
-	string out = "";
+	string out = " ";
 	for (auto& c : s)
 	{
 		bool bPunc = (c == '.' || c == '!' || c == '?' || c == ',');
@@ -20,92 +22,67 @@ void remove_punctuation(string& s)
 	s = out;
 }
 
-void remove_double_quotes(string& s)
+void removeQuotes(string& s)
 {
 	s.erase(remove(s.begin(), s.end(), '\"'), s.end());
 }
 
-char to_lower(char c)
+char toLower(char c)
 {
 	return std::tolower(c);
 }
-string convert_to_lower(string s)
+string convertLower(string s)
 {
-	std::transform(s.begin(), s.end(), s.begin(), to_lower) ;
+	std::transform(s.begin(), s.end(), s.begin(), toLower) ;
 	return s;
 }
 
-bool check_alpha(unsigned char ch)
+bool checkAlpha(unsigned char ch)
 {	 
 	bool bRes = isalpha(ch) || ch == '-' || ch == '\'';
 	return !bRes;
 }
 
-bool is_word_valid(string& s)
+bool checkValid(string& s)
 {
-	/*
-	 1. A proper word must have at least one letter (use the 26 letters in the English alphabet) and may contain 
-	 a hyphen or an apostrophe. No other characters are allowed.
-
-	 2. A word must start with a letter, and it can contain one or more hyphens (multi-thread), and it can have 
-	zero or one apostrophe (don’t)
-	3. Capitalization is ignored (fred is the same as Fred)
-	4. Punctuation is ignored (! ? )
-	5. Double quotes are ignored (“hammer” is the same as hammer)
-*/
-	//Punctuation is ignored (! ? )
-	remove_punctuation(s);
-
-	//Double quotes are ignored(“hammer” is the same as hammer)
-	remove_double_quotes(s);
+	removePunctiation(s);
+	removeQuote(s);
 
 
-	bool bValid = false;
+	bool valid = false;
 
-	if(find_if(s.begin(), s.end(), check_alpha) == s.end())
-		bValid = true;
+	if(find_if(s.begin(), s.end(), checkAlpha) == s.end())
+		valid = true;
 		
 	//A word must start with a letter
 		if (isalpha(s[0]) == false)
-			bValid = false;
-	return bValid;
+			valid = false;
+	return valid;
 }
 
-void populate_word_list(string filepath,vector<string>& out)
+void populate(string filepath, vector<string>& out)
 {
-	fstream new_file;
+	fstream newFile;
 	std::string line;
 	int i = 0;
-
-	//if (filepath == "")
-	//{
-	//	//dummy data insertion in case of online compiler.
-	//	// todo it should be removed later.
-
-	//	for (int i = 0; i < COUNT; i++)
-	//	{
-	//		arr[i] = (rand() % (MAX_VAL - MIN_VAL + 1) + MIN_VAL);
-	//	}
-	//	return;
-	//}
-
-	new_file.open(filepath, ios::in);
-	if (!new_file)
+	
+	newFile.open(filepath, ios::in);
+	if (!newFile)
 		cout << "No such file";
 	else {
 		char ch;
-		while (!new_file.eof())
+		while (!newFile.eof())
 		{
-			getline(new_file, line);
-			vector<string> w = removeDupWord(line);
+			getline(newFile, line);
+			vector<string> w = duplicateWord(line);
 			out.insert(out.end(), w.begin(), w.end());
 			i++;
 		}
 	}
-	new_file.close();
+	newFile.close();
 }
 
-vector<string> removeDupWord(string str)
+vector<string> duplicateWord(string str)
 {
 	vector<string> out;
 	string word = "";
@@ -114,7 +91,7 @@ vector<string> removeDupWord(string str)
 		if (x == ' ')
 		{
 			//cout << word << endl;
-			if (is_word_valid(word))
+			if (checkValid(word))
 			{
 				out.push_back(word);
 				word = "";
@@ -130,7 +107,7 @@ vector<string> removeDupWord(string str)
 		}
 	}
 	//cout << word << endl;
-	if (is_word_valid(word))
+	if (checkValid(word))
 		out.push_back(word);
 
 	return out;
@@ -146,37 +123,37 @@ int main(int argc, char** argv)
     }
 
 
-    string dict_file_name = argv[1];
-    string txt_file_name = argv[2];
+    string dictionary = argv[1];
+    string txt = argv[2];
 
     vector<string> word_dict;
     vector<string> word_file;
 
 
-	convert_to_lower("Wood");
-	populate_word_list(dict_file_name, word_dict);
-	populate_word_list(txt_file_name, word_file);
-	//cout << "**********************" << endl;
-	map<string, int> mis_spelled_words;
+	convertLower("Wood");
+	populate(dictionary, word_dict);
+	populate(txt, word_file);
+
+	map<string, int> misspelledWord;
 	for (string word : word_file)
 	{
-		word = convert_to_lower(word);
+		word = convertLower(word);
 		if (find(word_dict.begin(), word_dict.end(), word) == word_dict.end())
 		{
-			map<string, int>::iterator it = mis_spelled_words.find(word);
-			if (it == mis_spelled_words.end())
+			map<string, int>::iterator it = misspelledWord.find(word);
+			if (it == misspelledWord.end())
 			{
-				mis_spelled_words.insert(std::pair<string,int>(word,1));
+				misspelledWord.insert(std::pair<string,int>(word,1));
 			}
 			else
 			{
-				mis_spelled_words[word] = it->second + 1;
+				misspelledWord[word] = it->second + 1;
 			}
 		}
 	}
 
-	cout << "Misspelled words:" << mis_spelled_words.size() << endl;
-	for (map<string, int>::iterator it = mis_spelled_words.begin(); it != mis_spelled_words.end(); it++)
+	cout << "Misspelled words:" << misspelledWord.size() << endl;
+	for (map<string, int>::iterator it = misspelledWord.begin(); it != misspelledWord.end(); it++)
 	{
 		cout << it->first << " - " << it->second << endl;
 	}
