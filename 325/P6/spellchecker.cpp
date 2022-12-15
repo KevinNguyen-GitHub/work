@@ -10,6 +10,17 @@ using namespace std;
 
 vector<string> duplicateWord(string str);
 
+char toLower(char c)
+{
+	return tolower(c);
+}
+
+string convertLower(string s)
+{
+	std::transform(s.begin(), s.end(), s.begin(), toLower) ;
+	return s;
+}
+
 void removePunctiation(string& s)
 {
 	string out = " ";
@@ -27,28 +38,16 @@ void removeQuotes(string& s)
 	s.erase(remove(s.begin(), s.end(), '\"'), s.end());
 }
 
-char toLower(char c)
-{
-	return tolower(c);
-}
-
-string convertLower(string s)
-{
-	std::transform(s.begin(), s.end(), s.begin(), toLower) ;
-	return s;
-}
-
 bool checkAlpha(unsigned char ch)
 {	 
-	bool filler = isalpha(ch) || ch == '-' || ch == '\'';
-	return !filler;
+	bool alpha = isalpha(ch) || ch == '-' || ch == '\'';
+	return !alpha;
 }
 
 bool checkValid(string& s)
 {
 	removePunctiation(s);
 	removeQuote(s);
-
 
 	bool valid = false;
 
@@ -57,29 +56,30 @@ bool checkValid(string& s)
 		
 		if (isalpha(s[0]) == false)
 			valid = false;
+
 	return valid;
 }
 
 void populate(string filepath, vector<string>& out)
 {
-	fstream newFile;
+	fstream file;
 	std::string line;
 	int i = 0;
 	
-	newFile.open(filepath, ios::in);
-	if (!newFile)
+	file.open(filepath, ios::in);
+	if (!file)
 		cout << "No such file";
 	else {
 		char ch;
-		while (!newFile.eof())
+		while (!file.eof())
 		{
-			getline(newFile, line);
+			getline(file, line);
 			vector<string> w = duplicateWord(line);
 			out.insert(out.end(), w.begin(), w.end());
 			i++;
 		}
 	}
-	newFile.close();
+	file.close();
 }
 
 vector<string> duplicateWord(string str)
@@ -106,7 +106,7 @@ vector<string> duplicateWord(string str)
 			word = word + x;
 		}
 	}
-	
+
 	if (checkValid(word))
 		out.push_back(word);
 
