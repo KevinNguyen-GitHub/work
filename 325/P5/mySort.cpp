@@ -131,15 +131,15 @@ int main(int argc, char* argv[])
     int second;
     while (first <= 6) {
       second = first + 1;
-      merge(v, indices[first], indices[second]); // ( arr l r )
+      merge(v, indices[first], indices[second]); 
       first = second + 1;
     }
 
     // merge
-    merge(v, indices[0], 250000); //4
-    merge(v, 250000, 500000); //4
-    merge(v, 500000, 750000); //2
-    merge(v, 250000, MAX);  //2
+    merge(v, indices[0], THREAD_MAX  * 2); 
+    merge(v, THREAD_MAX  * 2, THREAD_MAX  * 4); 
+    merge(v, THREAD_MAX  * 4, THREAD_MAX  * 6); 
+    merge(v, THREAD_MAX  * 2, MAX);  
     merge(v, indices[0], MAX); 
 
     
