@@ -3,7 +3,7 @@
 #include <iostream>
 using namespace std;
 
-Deck :: Deck () //calling deck from header
+Deck :: Deck ()
 {
   topCard = 0;
   char rank[] = {'A', '2', '3', '4', '5', '6', '7', '8', '9', 'D',   
@@ -17,25 +17,24 @@ Deck :: Deck () //calling deck from header
       suitAmount = 0;
     }
 
-  else if (i < 26) {
-    suitAmount = 1;
-  }
+    else if (i < 26) {
+      suitAmount = 1;
+    }
 
-  else if (i < 39) {
-    suitAmount = 2;
-  }
+    else if (i < 39) {
+      suitAmount = 2;
+    }
 
-  else if (i >= 39) {
+    else if (i >= 39) {
 
-    suitAmount = 3;
+      suitAmount = 3;
+    }
+      items[i] = Card(rank[i % 13], suit[suitAmount]);
   }
-    items[i] = Card(rank[i % 13], suit[suitAmount]);
- }
 }
 
 
-void Deck :: refreshDeck() //refresh deck makes a new deck, calls the original constructor
-//♠, ♣,♥, ♦
+void Deck :: refreshDeck()
 {
   topCard = 0;
   char rank[] = {'A', '2', '3', '4', '5', '6', '7', '8', '9', 'D', 
@@ -67,7 +66,7 @@ void Deck :: refreshDeck() //refresh deck makes a new deck, calls the original c
 
 }
 
-Card Deck :: deal() //get top of the card, index of 0?
+Card Deck :: deal()
 {
   
   Card dealing = items[topCard];
@@ -75,11 +74,9 @@ Card Deck :: deal() //get top of the card, index of 0?
 
   return dealing;
   
-  //create counter and need to reset counter everytime after every use and also track index
-  //for loop might work better
 }
 
-void Deck :: shuffle() { //shuffle deck using random libraries
+void Deck :: shuffle() { 
 
 for (int i = 0; i < 100000; i++) {
 
@@ -93,22 +90,19 @@ for (int i = 0; i < 100000; i++) {
   }
 }
   
-bool Deck :: isEmpty() {// check using length or something else
+bool Deck :: isEmpty() {
 
-  
   if (topCard >= 52) {
 
     return true;
   }
-
   else {
-    
     return false;
     
   }
 }
   
-void Deck :: display() { // display deck in 13 columns and 4 rows
+void Deck :: display() { 
 
   for (int i = 1; i < 53; i++) {
 

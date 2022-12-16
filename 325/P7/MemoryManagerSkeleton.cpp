@@ -1,5 +1,5 @@
 #include "MemoryManager.h"
-
+#include <stdlib.h>
 #include <iomanip>
 #include <iostream>
 using namespace std;
@@ -78,48 +78,143 @@ namespace MemoryManager
 
 	}
 
-	// return a pointer inside the memory pool
 	void* allocate(int aSize)
-	{
-		// If no chunk can accommodate aSize call onOutOfMemory()
-		if ((int)(*(unsigned short*)(MM_pool)) + aSize + 6 > 65536)
-			onOutOfMemory();
+{
+    // Get a pointer to the memory pool
+    unsigned char* MM_pool = ...;
 
-		// TBD
-	}
+    // Check if the memory pool has enough space to allocate a chunk of the specified size
+    if ((int)(*(unsigned short*)(MM_pool)) + aSize + 6 > 65536)
+    {
+        // If not, call the onOutOfMemory function
+        onOutOfMemory();
+    }
 
-	// Free up a chunk previously allocated
+    // Get a pointer to the next free chunk in the memory pool
+    unsigned char* freeChunk = MM_pool + 2 + *(unsigned short*)(MM_pool);
+
+    // Set the size of the free chunk to the specified size
+    *(unsigned short*)(freeChunk) = aSize;
+
+    // Set the "allocated" flag for the chunk
+    *(freeChunk + 2) = 1;
+
+    // Update the pointer to the next free chunk in the memory pool
+    *(unsigned short*)(MM_pool) += aSize + 6;
+
+    // Return a pointer to the data area of the chunk
+    return freeChunk + 6;
+}
+
+
 	void deallocate(void* aPointer)
 	{
-		// TBD
+    // Use the std::free function to free the memory previously allocated for the pointer
+    std::free(aPointer);
 	}
 
+
+	// Will return the size of the memory block pointed to by 'ptr'
 	int size(void *ptr)
 	{
-		// TBD
+		// Get the size of the memory block
+		int blockSize = malloc_usable_size(ptr);
+
+		// Return the size of the memory block
+		return blockSize;
 	}
 	
 	//---
 	//--- support routines
 	//--- 
 
-	// Will scan the memory pool and return the total free space remaining
 	int freeMemory(void)
 	{
-		//TBD
+		// Start with 0 bytes of free memory
+		int freeMem = 0;
+
+		// Get the current break value, which is the end of the memory pool
+		void* breakValue = sbrk(0);
+
+		// Loop through the memory pool, starting at the beginning
+		void* p = NULL;
+		while (p < breakValue)
+		{
+			// Get the size of the current block of memory
+			int blockSize = malloc_usable_size(p);
+
+			// If the block is not in use, add its size to the total free memory
+			if (!blockSize)
+			{
+				freeMem += blockSize;
+			}
+
+			// Move to the next block of memory
+			p = (char*)p + blockSize;
+		}
+
+		// Return the total free memory
+		return freeMem;
 	}
 
-
-	// Will scan the memory pool and return the total used memory - memory that has been deallocated
+	// Will scan the memory pool and return the total used memory
 	int usedMemory(void)
 	{
-		//TBD
-	}
+		// Start with 0 bytes of used memory
+		int usedMem = 0;
 
-	// Will scan the memory pool and return the total in use memory - memory being curretnly used
+		// Get the current break value, which is the end of the memory pool
+		void* breakValue = sbrk(0);
+
+		// Loop through the memory pool, starting at the beginning
+		void* p = NULL;
+		while (p < breakValue)
+		{
+			// Get the size of the current block of memory
+			int blockSize = malloc_usable_size(p);
+
+			// If the block is in use, add its size to the total used memory
+			if (blockSize)
+			{
+				usedMem += blockSize;
+			}
+
+			// Move to the next block of memory
+			p = (char*)p + blockSize;
+		}
+
+		// Return the total used memory
+		return usedMem;
+	}	
+
+	// Will scan the memory pool and return the total in-use memory
 	int inUseMemory(void)
 	{
-		//TBD
+		// Start with 0 bytes of in-use memory
+		int inUseMem = 0;
+
+		// Get the current break value, which is the end of the memory pool
+		void* breakValue = sbrk(0);
+
+		// Loop through the memory pool, starting at the beginning
+		void* p = NULL;
+		while (p < breakValue)
+		{
+			// Get the size of the current block of memory
+			int blockSize = malloc_usable_size(p);
+
+			// If the block is in use, add its size to the total in-use memory
+			if (blockSize)
+			{
+				inUseMem += blockSize;
+			}
+
+			// Move to the next block of memory
+			p = (char*)p + blockSize;
+		}
+
+		// Return the total in-use memory
+		return inUseMem;
 	}
 
 	// helper function to see teh InUse list in memory

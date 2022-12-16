@@ -12,18 +12,13 @@ bool isFibo(int partSum) {
   fiboSum = first + second;
 
   while (fiboSum < partSum){
-  //fibonacci until cardSum
-    first = second; // 0, 1, 1 , 2
-    second = fiboSum; // 1, 1, 2, 3
-    fiboSum = first + second; // 0 + 1 = 1 , 1+ 1 = 2, 1+ 2 =3
-
-    //0,1,1,2,3,5,8,13,21,34,55
-
+    first = second;
+    second = fiboSum; 
+    fiboSum = first + second; 
   } 
   if (fiboSum == partSum) {
     return true;
   }
-  
   else {
     return false;
   }
@@ -35,11 +30,9 @@ int main() {
   Deck items;
 
   while (userInput < 5){
-
     cout << "Welcome to Fibonacci Solitaire!\n1. New Deck\n2. Display Deck\n3. Shuffle Deck\n4. Play Solitaire\n5. Exit\nPlease input a number between 1 and 5." << endl;
     cin >> userInput;
     cout << endl;
-  
 
   if (userInput == 1){
     items.refreshDeck();

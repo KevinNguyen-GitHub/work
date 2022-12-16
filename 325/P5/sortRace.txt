@@ -1,4 +1,0 @@
-generate 1000000 100000 999999
-time sort numbers.txt > sysSort.out
-time mysort numbers.txt mySort.out
-verify mySort.out 

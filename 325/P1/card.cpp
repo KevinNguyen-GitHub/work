@@ -2,26 +2,20 @@
 #include <iostream>
 using namespace std;
 
-Card :: Card () // creates empty object card
+Card :: Card ()
 {
- 
  rank = '0';
  suit = 'T';
 }
 
-Card :: Card (char r, char s) // passes parameters to an empty card
+Card :: Card (char r, char s) 
 {
-  
   rank = r;
   suit = s;
-  
 }
 
-void Card::setCard(char r, char s)  // set ranks  like ace, jack, queen, kind to numbers
-// how do i set one card when i have set most of the cards to variables?
-
+void Card::setCard(char r, char s) 
 {
-
   char A = 1;
   char J = 'D';
   char Q = 'D';
@@ -29,23 +23,15 @@ void Card::setCard(char r, char s)  // set ranks  like ace, jack, queen, kind to
   
 }
 
-int Card :: getValue()  //getter function to get values from cards
+int Card :: getValue() 
 {
-
   if (rank == 'A'){
-
     return 1;
-    
   }
-
    else if ((rank == 'K') || (rank == 'Q') || (rank == 'J')) {
-
      return 10;
-     
    }
-
    else {
-     
     if (rank == '2') {
     return 2;
     }
@@ -61,15 +47,19 @@ int Card :: getValue()  //getter function to get values from cards
     if (rank == '5') {
       return 5;
     }
+
     if (rank == '6') {
       return 6;
     }
+
     if (rank == '7') {
       return 7;
     }
+
     if (rank == '8') {
       return 8;
     }
+
     if (rank == '9') {
       return 9;
     }
@@ -78,16 +68,12 @@ int Card :: getValue()  //getter function to get values from cards
 
       return 10;
     }
-
-    
    }  
-
  }
 
 
-void Card :: display() //displays one object of card for deck?
+void Card :: display() 
 { 
-
   if (rank == 'D') {
 
     if (suit == 'S') {
@@ -120,11 +106,6 @@ void Card :: display() //displays one object of card for deck?
   }
 
   else{
-
     cout << rank << "♣";
   }
-
-   //♠, ♣,♥, ♦
-  
-  // add symbols to string using a loop then print out
 }
