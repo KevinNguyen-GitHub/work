@@ -1,4 +1,3 @@
-
 #include <fstream> 
 #include <vector>
 #include <iostream> 
@@ -6,14 +5,9 @@
 #include <cstring> 
 using namespace std;
 
-struct arguments
+void insertionSort(int* arr, int size)
 {
-    int *arr;
-};
-
-void insertionSort(int* arr, int n)
-{
-    for (int i = 1; i < n; i++)
+    for (int i = 1; i < size; i++)
     {
         int key = arr[i];
         int j = i - 1;
@@ -30,7 +24,7 @@ void insertionSort(int* arr, int n)
     }
 }
 
-  
+
 void merge(int arr[], int left, int right) {
     int mid = (left+right)/2; // middle
     int size = right - left;
@@ -85,31 +79,39 @@ int main(int argc, char* argv[])
         v[count++] = n; // insert a number into the array and increase the index
     }
 
-    arguments argList[8];
-    for (int i = 0; i < 8; i++) {
-      argList[i].arr = v + (i * THREAD_MAX);
-    }
-    
-    // Create 8 threads to sort 8 different subsets of the array
-    pthread_t thread0, thread1, thread2, thread3, thread4, thread5, thread6, thread7;
-    int iret0, iret1, iret2, iret3, iret4, iret5, iret6, iret7;
-    iret0 = pthread_create(&thread0, NULL, insertionSort, (void *)&argList[0]);
-    iret1 = pthread_create(&thread1, NULL, insertionSort, (void *)&argList[1]);
-    iret2 = pthread_create(&thread2, NULL, insertionSort, (void *)&argList[2]);
-    iret3 = pthread_create(&thread3, NULL, insertionSort, (void *)&argList[3]);
-    iret4 = pthread_create(&thread4, NULL, insertionSort, (void *)&argList[4]);
-    iret5 = pthread_create(&thread5, NULL, insertionSort, (void *)&argList[5]);
-    iret6 = pthread_create(&thread6, NULL, insertionSort, (void *)&argList[6]);
-    iret7 = pthread_create(&thread7, NULL, insertionSort, (void *)&argList[7]);
+    int v0[THREAD_MAX], v1[THREAD_MAX], v2[THREAD_MAX], v3[THREAD_MAX], v4[THREAD_MAX], v5[THREAD_MAX], v6[THREAD_MAX], v7[THREAD_MAX];
 
-    pthread_join(thread0, NULL);
-    pthread_join(thread1, NULL);
-    pthread_join(thread2, NULL);
-    pthread_join(thread3, NULL);
-    pthread_join(thread4, NULL);
-    pthread_join(thread5, NULL);
-    pthread_join(thread6, NULL);
-    pthread_join(thread7, NULL);
+    // copy elements from v into the corresponding array
+    memcpy(v0, v + (0 * THREAD_MAX), THREAD_MAX * sizeof(int));
+    memcpy(v1, v + (1 * THREAD_MAX), THREAD_MAX * sizeof(int));
+    memcpy(v2, v + (2 * THREAD_MAX), THREAD_MAX * sizeof(int));
+    memcpy(v3, v + (3 * THREAD_MAX), THREAD_MAX * sizeof(int));
+    memcpy(v4, v + (4 * THREAD_MAX), THREAD_MAX * sizeof(int));
+    memcpy(v5, v + (5 * THREAD_MAX), THREAD_MAX * sizeof(int));
+    memcpy(v6, v + (6 * THREAD_MAX), THREAD_MAX * sizeof(int));
+    memcpy(v7, v + (7 * THREAD_MAX), THREAD_MAX * sizeof(int));
+
+    // Create 8 threads to sort 8 different subsets of the array
+    thread thread0, thread1, thread2, thread3, thread4, thread5, thread6, thread7;
+
+    thread0 = thread(insertionSort, v0, THREAD_MAX);
+    thread1 = thread(insertionSort, v1, THREAD_MAX);
+    thread2 = thread(insertionSort, v2, THREAD_MAX);
+    thread3 = thread(insertionSort, v3, THREAD_MAX);
+    thread4 = thread(insertionSort, v4, THREAD_MAX);
+    thread5 = thread(insertionSort, v5, THREAD_MAX);
+    thread6 = thread(insertionSort, v6, THREAD_MAX);
+    thread7 = thread(insertionSort, v7, THREAD_MAX);
+
+    thread0.join();
+    thread1.join();
+    thread2.join();
+    thread3.join();
+    thread4.join();
+    thread5.join();
+    thread6.join();
+    thread7.join();
+
 
     // merging
     int indices[8];
@@ -125,11 +127,21 @@ int main(int argc, char* argv[])
     }
 
     // merge
-    merge(v, indices[0], 250000); 
-    merge(v, 250000, 500000); 
-    merge(v, 500000, 750000); 
-    merge(v, 250000, MAX);  
-    merge(v, indices[0], MAX); 
+    merge(v, 0, THREAD_MAX);
+    merge(v, THREAD_MAX, 2 * THREAD_MAX);
+    merge(v, 2 * THREAD_MAX, 3 * THREAD_MAX);
+    merge(v, 3 * THREAD_MAX, 4 * THREAD_MAX);
+    merge(v, 4 * THREAD_MAX, 5 * THREAD_MAX);
+    merge(v, 5 * THREAD_MAX, 6 * THREAD_MAX);
+    merge(v, 6 * THREAD_MAX, 7 * THREAD_MAX);
+    merge(v, 7 * THREAD_MAX, 8 * THREAD_MAX);
+
+    // Merge the final 8 sorted arrays into a single sorted array
+    merge(v, 0, 2 * THREAD_MAX);
+    merge(v, 2 * THREAD_MAX, 4 * THREAD_MAX);
+    merge(v, 4 * THREAD_MAX, 6 * THREAD_MAX);
+    merge(v, 6 * THREAD_MAX, 8 * THREAD_MAX);
+
 
     
     fout.open(argv[2], ios::out | ios::trunc);

@@ -1,5 +1,5 @@
 #include "MemoryManager.h"
-#include <stdlib.h>
+
 #include <iomanip>
 #include <iostream>
 using namespace std;
@@ -66,128 +66,171 @@ namespace MemoryManager
 	// Initialize set up any data needed to manage the memory pool
 	void initializeMemoryManager(void)
 	{
+		int freeListStart = 0; // starting index of the freelist
+		int inUseListStart = 2; // starting index of the inUse list
+		int usedListStart = 4; // starting index for the used list - deallocated memory
 
-		int freeHead = 0; // starting index of the freelist
-		int inUseHead = 2; // starting index of the inUselist
-		int usedHead = 4; // starting index for the used list - deallocated memory
-
-		int nextLink = 2; // offset index of the next link
-		int prevLink = 4; // offset index for the prev link
-
-		*(unsigned short*)(MM_pool + freeHead) = 6; // freelist starts at byte 6
-		*(unsigned short*)(MM_pool + inUseHead) = 0;	// nothing in the inUse list yet
-		*(unsigned short*)(MM_pool + usedHead) = 0; // nothing in the used list yet
-
+		// Set the head of the free list to the index following the used list
+		*(unsigned short*)(MM_pool + freeListStart) = usedListStart + 2;
+		// Set the head of the inUse list to null
+		*(unsigned short*)(MM_pool + inUseListStart) = 0;
+		// Set the head of the used list to null
+		*(unsigned short*)(MM_pool + usedListStart) = 0;
 	}
 
-	void *allocate(int aSize)
+
+	// return a pointer inside the memory pool
+	void *allocate(int size)
 	{
-		// Declare as arrays for faster access
-		sPtr freeHead[1] = {MM_pool[0]};
-		sPtr inUseHead[1] = {MM_pool[2]};
-		sPtr usedHead[1] = {MM_pool[4]};
+		// Declare as pointers so I can dereference only as needed
+		sPtr *freeListHead = (sPtr *)(MM_pool);
+		sPtr *inUseListHead = (sPtr *)(MM_pool + 2);
+		sPtr *usedListHead = (sPtr *)(MM_pool + 4);
 
-		if (freeHead[0] + aSize + 6 > 65536)
-			return nullptr;
-
-		sPtr node[1] = {MM_pool[freeHead[0]]};
-		sPtr nodeNext[1] = {MM_pool[freeHead[0] + 2]};
-		sPtr nodePrev[1] = {MM_pool[freeHead[0] + 4]};
-
-		node[0] = aSize;
-		nodePrev[0] = 0;
-		nodeNext[0] = inUseHead[0];
-
-		if (nodeNext[0] != 0) {
-			MM_pool[nodeNext[0] + 4] = freeHead[0];
+		// Check if there is enough space in the memory pool
+		if ((int)(*freeListHead) + size + 6 > 65536)
+		{
+			onOutOfMemory();
 		}
 
-		inUseHead[0] = freeHead[0];
-		freeHead[0] = inUseHead[0] + aSize + 6;
+		// Get the node at the head of the free list
+		sPtr *node = (sPtr *)(MM_pool + *freeListHead);
+		// Get the next and previous pointers of the node
+		sPtr *nodeNext = (sPtr *)(MM_pool + *freeListHead + 2);
+		sPtr *nodePrev = (sPtr *)(MM_pool + *freeListHead + 4);
 
-		return (void *)(MM_pool + inUseHead[0] + 6);
-	}
+		// Set the size of the node
+		*node = size;
+		// Set the previous pointer of the node to null
+		*nodePrev = 0;
+		// Set the next pointer of the node to the head of the inUse list
+		*nodeNext = *inUseListHead;
 
-
-
-	void deallocate(void *aPointer)
-	{
-		// Declare as arrays for faster access
-		char *sNode = (char *)aPointer;
-
-		sPtr freeHead[1] = {MM_pool[0]};
-		sPtr inUseHead[1] = {MM_pool[2]};
-		sPtr usedHead[1] = {MM_pool[4]};
-
-		sPtr node[1] = {*(sPtr *)(sNode - 6)};
-		sPtr nodeNext[1] = {*(sPtr *)(sNode - 4)};
-		sPtr nodePrev[1] = {*(sPtr *)(sNode - 2)};
-
-		if (nodeNext[0] != 0) {
-			MM_pool[nodeNext[0] + 4] = nodePrev[0];
+		// If the inUse list is not empty, set the previous pointer of the head of the inUse list to the current node
+		if (*nodeNext != 0)
+		{
+			*(sPtr *)(MM_pool + *nodeNext + 4) = *freeListHead;
 		}
 
-		MM_pool[nodePrev[0] + 2] = nodeNext[0];
-		nodeNext[0] = usedHead[0];
-		nodePrev[0] = 0;
-		MM_pool[nodeNext[0] + 4] = ((char *)node - MM_pool);
-		usedHead[0] = ((char *)node - MM_pool);
+		// Set the head of the inUse list to the current node
+		*inUseListHead = *freeListHead;
+		// Update the head of the free list to the next available block of memory
+		*freeListHead = *inUseListHead + size + 6;
+
+		// Return a pointer to the data portion of the node
+		return (void *)(MM_pool + *inUseListHead + 6);
 	}
 
-	// returns the number of bytes allocated by ptr
+	// Free up a chunk previously allocated
+	void deallocate(void *pointer)
+	{
+		// Declare as pointers so I can dereference only as needed
+		char *sNode = (char *)pointer;
+
+		sPtr *freeListHead = (sPtr *)(MM_pool);
+		sPtr *inUseListHead = (sPtr *)(MM_pool + 2);
+		sPtr *usedListHead = (sPtr *)(MM_pool + 4);
+
+		// Get the node that contains the data pointed to by 'pointer'
+		sPtr *node = (sPtr *)(sNode - 6);
+		// Get the next and previous pointers of the node
+		sPtr *nodeNext = (sPtr *)(sNode - 4);
+		sPtr *nodePrev = (sPtr *)(sNode - 2);
+
+		// If the node has a next node, set the previous pointer of the next node to the previous node of the current node
+		if (*nodeNext != 0)
+		{
+			*(sPtr *)(MM_pool + *nodeNext + 4) = *nodePrev;
+		}
+
+		// If the node has a previous node, set the next pointer of the previous node to the next node of the current node
+		if (*nodePrev != 0)
+		{
+			*(sPtr *)(MM_pool + *nodePrev + 2) = *nodeNext;
+		}
+
+		// Set the next pointer of the current node to the head of the used list
+		*nodeNext = *usedListHead;
+		// Set the previous pointer of the current node to null
+		*nodePrev = 0;
+
+		// If the used list is not empty, set the previous pointer of the head of the used list to the current node
+		if (*nodeNext != 0)
+		{
+			*(sPtr *)(MM_pool + *nodeNext + 4) = ((char *)node - MM_pool);
+		}
+		// Set the head of the used list to the current node
+		*usedListHead = ((char *)node - MM_pool);
+	}
+
+
+
 	int size(void *ptr)
 	{
 		return *(sPtr *)((char *)ptr - 6);
 	}
-	
 	//---
 	//--- support routines
 	//--- 
 
+	// Will scan the memory pool and return the total free space remaining
 	int freeMemory(void)
 	{
 		return MM_POOL_SIZE - *(sPtr *)(MM_pool);
 	}
 
-	// Will scan the memory pool and return the total used memory
-	int usedMemory()
+
+	int usedMemory(void)
 	{
 		int total = 0;
-		int cur = MM_pool[4];
-		int size = MM_pool[cur];
-		int next = MM_pool[cur + 2];
-		int prev = MM_pool[cur + 4];
+
+		// Get the head of the used list
+		int cur = *(unsigned short *)&MM_pool[4];
+		int size = *(unsigned short *)&MM_pool[cur];
+		int next = *(unsigned short *)&MM_pool[cur + 2];
+		int prev = *(unsigned short *)&MM_pool[cur + 4];
+
+		// Iterate through the used list and sum up the sizes of all the nodes
 		while (cur != 0)
 		{
 			total += size + 6;
-			cur = next;
-			size = MM_pool[cur];
-			next = MM_pool[cur + 2];
-			prev = MM_pool[cur + 4];
-		}
 
-		return total;
-	}	
-
-	// Will scan the memory pool and return the total in-use memory
-	int inUseMemory()
-	{
-		int total = 0;
-		int cur = MM_pool[2];
-		int size = MM_pool[cur];
-		int next = MM_pool[cur + 2];
-		int prev = MM_pool[cur + 4];
-		while (cur != 0)
-		{
-			total += size + 6;
+			// Move to the next node
 			cur = next;
-			size = MM_pool[cur];
-			next = MM_pool[cur + 2];
-			prev = MM_pool[cur + 4];
+			size = *(unsigned short *)&MM_pool[cur];
+			next = *(unsigned short *)&MM_pool[cur + 2];
+			prev = *(unsigned short *)&MM_pool[cur + 4];
 		}
 
 		return total;
 	}
+
+	// Will scan the memory pool and return the total in use memory - memory being curretnly used
+	int inUseMemory(void)
+	{
+		int total = 0;
+
+		// Get the head of the inUse list
+		int cur = *(unsigned short *)&MM_pool[2];
+		int size = *(unsigned short *)&MM_pool[cur];
+		int next = *(unsigned short *)&MM_pool[cur + 2];
+		int prev = *(unsigned short *)&MM_pool[cur + 4];
+
+		// Iterate through the inUse list and sum up the sizes of all the nodes
+		while (cur != 0)
+		{
+			total += size + 6;
+
+			// Move to the next node
+			cur = next;
+			size = *(unsigned short *)&MM_pool[cur];
+			next = *(unsigned short *)&MM_pool[cur + 2];
+			prev = *(unsigned short *)&MM_pool[cur + 4];
+		}
+
+		return total;
+	}
+
 
 
 	// helper function to see teh InUse list in memory

@@ -31,11 +31,11 @@ void merge(int arr[], int left, int right) {
     int size = right - left;
     int *temp = new int[size]; // dynamic array
 
-    /* Merge the temp arrays back into arr[left..right] */
+    // Merge the two subarrays arr[left..mid] and arr[mid+1..right]
     int i = left; 
-    int j = mid; 
+    int j = mid+1; 
     int k = 0; 
-    while (i < mid && j < right) {
+    while (i <= mid && j <= right) {
         if (arr[i] <= arr[j]) {
             temp[k++] = arr[i++];
         } else {
@@ -44,8 +44,8 @@ void merge(int arr[], int left, int right) {
     }
 
     // Copy the remaining elements if one of the subarrays is empty
-    while (i < mid) temp[k++] = arr[i++];
-    while (j < right) temp[k++] = arr[j++];
+    while (i <= mid) temp[k++] = arr[i++];
+    while (j <= right) temp[k++] = arr[j++];
 
     // Copy the sorted temp array into the original array
     for (int i = 0; i < size; i++) {
@@ -54,6 +54,7 @@ void merge(int arr[], int left, int right) {
 
     delete[] temp; // Use array delete to avoid memory leak
 }
+
 
 int main(int argc, char* argv[])
 {
