@@ -1,20 +1,29 @@
-import csv
-import statistics
+import matplotlib.pyplot as plt
+import numpy as np
 
 # Read in the data from the CSV file
-data = []
-with open('Sales_01_20.csv', 'r') as csv_file:
-    reader = csv.reader(csv_file)
-    for row in reader:
-        data.append(float(row[0]))
+csv_file = 'Sales_01_20.csv'
+data = np.loadtxt(csv_file, delimiter = ',', skiprows = 1)
+        
+# calculate the mean
+def mean(numbers):
+    """Calculate the mean of an array of numbers"""
+    return sum(numbers) / len(numbers)
+
+# calculate the std
+def std(numbers):
+    """Calculate the standard deviation of an array of numbers"""
+    mean = mean(numbers)
+    variance = sum((x - mean) ** 2 for x in numbers) / len(numbers)
+    return variance ** 0.5
 
 # Calculate the mean and standard deviation for each year
 yearly_mean = []
 yearly_std = []
 for year in range(2001, 2021):
     year_data = [x for x in data if x >= year and x < year+1]
-    mean = statistics.mean(year_data)
-    std = statistics.stdev(year_data)
+    mean = mean(year_data)
+    std = std(year_data)
     yearly_mean.append(mean)
     yearly_std.append(std)
 
@@ -27,9 +36,6 @@ for year in range(2001, 2021):
     num_within_range = len([x for x in year_data if lower_bound <= x <= upper_bound])
     probability = num_within_range / len(year_data)
     yearly_probability.append(probability)
-
-# Plot the results using bar graphs (you will need to use a library like matplotlib for this)
-import matplotlib.pyplot as plt
 
 # Plot the mean values
 plt.bar(range(2001, 2021), yearly_mean)
