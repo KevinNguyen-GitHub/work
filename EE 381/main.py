@@ -66,6 +66,17 @@ import numpy as np
 csv_file = 'Sales_01_20.csv'
 data = np.loadtxt(csv_file, delimiter = ',', skiprows = 1)
 
+def quicksort(arr):
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    return quicksort(left) + middle + quicksort(right)
+
+quickSort(data)
+
 # Separate the data into 20 years of data
 years = 20
 data_by_year = np.array_split(data, years)
@@ -90,7 +101,6 @@ ax1.bar(range(1, years + 1), means)
 ax1.set_title('Yearly Mean Sale Prices')
 ax1.set_xlabel('Years')
 ax1.set_ylabel('Mean Price')
-ax1.set_xticks(range(2000, years + 5))
 
 # Plot the standard deviation values as a bar graph
 fig2, ax2 = plt.subplots()
@@ -98,7 +108,6 @@ ax2.bar(range(1, years + 1), stds)
 ax2.set_title('Yearly Standard Deviation of Sale Prices')
 ax2.set_xlabel('Years')
 ax2.set_ylabel('Standard Deviation')
-ax2.set_xticks(range(2000, years + 5))
 
 # Plot the probability values as a bar graph
 fig3, ax3 = plt.subplots()
@@ -106,5 +115,4 @@ ax3.bar(range(1, years + 1), probabilities)
 ax3.set_title('Yearly Probability of Sale Prices Within a Certain Range')
 ax3.set_xlabel('Years')
 ax3.set_ylabel('Probability')
-ax3.set_xticks(range(2000, years + 5))
 plt.show()
