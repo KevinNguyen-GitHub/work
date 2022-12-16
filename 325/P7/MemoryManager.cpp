@@ -4,6 +4,8 @@
 #include <iostream>
 using namespace std;
 
+typedef unsigned short sPtr;
+
 namespace MemoryManager
 {
 	// IMPORTANT IMPORTANT IMPORTANT IMPORTANT IMPORTANT IMPORTANT IMPORTANT IMPORTANT 
@@ -78,50 +80,64 @@ namespace MemoryManager
 
 	}
 
-	void* allocate(int aSize)
-{
-    // Get a pointer to the memory pool
-    unsigned char* MM_pool = ...;
-
-    // Check if the memory pool has enough space to allocate a chunk of the specified size
-    if ((int)(*(unsigned short*)(MM_pool)) + aSize + 6 > 65536)
-    {
-        // If not, call the onOutOfMemory function
-        onOutOfMemory();
-    }
-
-    // Get a pointer to the next free chunk in the memory pool
-    unsigned char* freeChunk = MM_pool + 2 + *(unsigned short*)(MM_pool);
-
-    // Set the size of the free chunk to the specified size
-    *(unsigned short*)(freeChunk) = aSize;
-
-    // Set the "allocated" flag for the chunk
-    *(freeChunk + 2) = 1;
-
-    // Update the pointer to the next free chunk in the memory pool
-    *(unsigned short*)(MM_pool) += aSize + 6;
-
-    // Return a pointer to the data area of the chunk
-    return freeChunk + 6;
-}
-
-
-	void deallocate(void* aPointer)
+	void *allocate(int aSize)
 	{
-    // Use the std::free function to free the memory previously allocated for the pointer
-    std::free(aPointer);
+		// Declare as arrays for faster access
+		sPtr freeHead[1] = {MM_pool[0]};
+		sPtr inUseHead[1] = {MM_pool[2]};
+		sPtr usedHead[1] = {MM_pool[4]};
+
+		if (freeHead[0] + aSize + 6 > 65536)
+			return nullptr;
+
+		sPtr node[1] = {MM_pool[freeHead[0]]};
+		sPtr nodeNext[1] = {MM_pool[freeHead[0] + 2]};
+		sPtr nodePrev[1] = {MM_pool[freeHead[0] + 4]};
+
+		node[0] = aSize;
+		nodePrev[0] = 0;
+		nodeNext[0] = inUseHead[0];
+
+		if (nodeNext[0] != 0) {
+			MM_pool[nodeNext[0] + 4] = freeHead[0];
+		}
+
+		inUseHead[0] = freeHead[0];
+		freeHead[0] = inUseHead[0] + aSize + 6;
+
+		return (void *)(MM_pool + inUseHead[0] + 6);
 	}
 
 
-	// Will return the size of the memory block pointed to by 'ptr'
+
+	void deallocate(void *aPointer)
+	{
+		// Declare as arrays for faster access
+		char *sNode = (char *)aPointer;
+
+		sPtr freeHead[1] = {MM_pool[0]};
+		sPtr inUseHead[1] = {MM_pool[2]};
+		sPtr usedHead[1] = {MM_pool[4]};
+
+		sPtr node[1] = {*(sPtr *)(sNode - 6)};
+		sPtr nodeNext[1] = {*(sPtr *)(sNode - 4)};
+		sPtr nodePrev[1] = {*(sPtr *)(sNode - 2)};
+
+		if (nodeNext[0] != 0) {
+			MM_pool[nodeNext[0] + 4] = nodePrev[0];
+		}
+
+		MM_pool[nodePrev[0] + 2] = nodeNext[0];
+		nodeNext[0] = usedHead[0];
+		nodePrev[0] = 0;
+		MM_pool[nodeNext[0] + 4] = ((char *)node - MM_pool);
+		usedHead[0] = ((char *)node - MM_pool);
+	}
+
+	// returns the number of bytes allocated by ptr
 	int size(void *ptr)
 	{
-		// Get the size of the memory block
-		int blockSize = malloc_usable_size(ptr);
-
-		// Return the size of the memory block
-		return blockSize;
+		return *(sPtr *)((char *)ptr - 6);
 	}
 	
 	//---
@@ -130,92 +146,49 @@ namespace MemoryManager
 
 	int freeMemory(void)
 	{
-		// Start with 0 bytes of free memory
-		int freeMem = 0;
-
-		// Get the current break value, which is the end of the memory pool
-		void* breakValue = sbrk(0);
-
-		// Loop through the memory pool, starting at the beginning
-		void* p = NULL;
-		while (p < breakValue)
-		{
-			// Get the size of the current block of memory
-			int blockSize = malloc_usable_size(p);
-
-			// If the block is not in use, add its size to the total free memory
-			if (!blockSize)
-			{
-				freeMem += blockSize;
-			}
-
-			// Move to the next block of memory
-			p = (char*)p + blockSize;
-		}
-
-		// Return the total free memory
-		return freeMem;
+		return MM_POOL_SIZE - *(sPtr *)(MM_pool);
 	}
 
 	// Will scan the memory pool and return the total used memory
-	int usedMemory(void)
+	int usedMemory()
 	{
-		// Start with 0 bytes of used memory
-		int usedMem = 0;
-
-		// Get the current break value, which is the end of the memory pool
-		void* breakValue = sbrk(0);
-
-		// Loop through the memory pool, starting at the beginning
-		void* p = NULL;
-		while (p < breakValue)
+		int total = 0;
+		int cur = MM_pool[4];
+		int size = MM_pool[cur];
+		int next = MM_pool[cur + 2];
+		int prev = MM_pool[cur + 4];
+		while (cur != 0)
 		{
-			// Get the size of the current block of memory
-			int blockSize = malloc_usable_size(p);
-
-			// If the block is in use, add its size to the total used memory
-			if (blockSize)
-			{
-				usedMem += blockSize;
-			}
-
-			// Move to the next block of memory
-			p = (char*)p + blockSize;
+			total += size + 6;
+			cur = next;
+			size = MM_pool[cur];
+			next = MM_pool[cur + 2];
+			prev = MM_pool[cur + 4];
 		}
 
-		// Return the total used memory
-		return usedMem;
+		return total;
 	}	
 
 	// Will scan the memory pool and return the total in-use memory
-	int inUseMemory(void)
+	int inUseMemory()
 	{
-		// Start with 0 bytes of in-use memory
-		int inUseMem = 0;
-
-		// Get the current break value, which is the end of the memory pool
-		void* breakValue = sbrk(0);
-
-		// Loop through the memory pool, starting at the beginning
-		void* p = NULL;
-		while (p < breakValue)
+		int total = 0;
+		int cur = MM_pool[2];
+		int size = MM_pool[cur];
+		int next = MM_pool[cur + 2];
+		int prev = MM_pool[cur + 4];
+		while (cur != 0)
 		{
-			// Get the size of the current block of memory
-			int blockSize = malloc_usable_size(p);
-
-			// If the block is in use, add its size to the total in-use memory
-			if (blockSize)
-			{
-				inUseMem += blockSize;
-			}
-
-			// Move to the next block of memory
-			p = (char*)p + blockSize;
+			total += size + 6;
+			cur = next;
+			size = MM_pool[cur];
+			next = MM_pool[cur + 2];
+			prev = MM_pool[cur + 4];
 		}
 
-		// Return the total in-use memory
-		return inUseMem;
+		return total;
 	}
+
 
 	// helper function to see teh InUse list in memory
 	void traverseInUse()
