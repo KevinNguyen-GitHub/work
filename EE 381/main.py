@@ -78,11 +78,11 @@ for year in data_by_year:
     means.append(np.mean(year))
     stds.append(np.std(year))
 
-    # Calculate the probability of sale prices within a certain range
-    lower_bound = 200000
-    upper_bound = 300000
-    probability = np.mean(np.logical_and(year >= lower_bound, year <= upper_bound))
-    probabilities.append(probability)
+# Calculate the probability of sale prices within a certain range
+lower_bound = 200000
+upper_bound = 300000
+probability = np.mean(np.logical_and(year >= lower_bound, year <= upper_bound))
+probabilities.append(probability)
 
 # Plot the mean, standard deviation, and probability values as bar graphs
 fig, ax = plt.subplots(3, sharex=True)
