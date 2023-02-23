@@ -139,8 +139,8 @@ int main() {
   srand(time(NULL));
 
   // test with an empty array
-  int a[1] = {};
   int n = 0;
+  int *a = malloc(sizeof(int) * n); // dynamically allocate memory for array
   merge_sort(a, n);
   quick_sort(a, n);
   printf("Empty array: %d\n", is_sorted(a, n));
