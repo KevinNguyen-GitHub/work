@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <time.h>
 // function to swap elements
 void swap(int *a, int *b) {
   int t = *a;
@@ -137,13 +137,15 @@ int main() {
 
   // test with an empty array
   int n = 0;
-  int *a = malloc(sizeof(int) * n); // dynamically allocate memory for array
+  int *a = NULL;
+
   merge_sort(a, n);
   quick_sort(a, n);
   printf("Empty array: %d\n", is_sorted(a, n));
 
   // test with an array of size 1
   n = 1;
+  a = malloc(sizeof(int) * n); // dynamically allocate memory for array
   a[0] = rand() % 100;
   merge_sort(a, n);
   quick_sort(a, n);
@@ -151,6 +153,7 @@ int main() {
 
   // test with a sorted array
   n = 10;
+  a = malloc(sizeof(int) * n); // dynamically allocate memory for array
   for (int i = 0; i < n; i++) {
     a[i] = i;
   }
@@ -160,6 +163,7 @@ int main() {
 
   // test with a reverse-sorted array
   n = 10;
+  a = malloc(sizeof(int) * n); // dynamically allocate memory for array
   for (int i = 0; i < n; i++) {
     a[i] = n - i - 1;
   }
@@ -169,6 +173,7 @@ int main() {
 
   // test with an array of random integers
   n = 1000;
+  a = malloc(sizeof(int) * n); // dynamically allocate memory for array
   for (int i = 0; i < n; i++) {
     a[i] = rand() % 10000;
   }
