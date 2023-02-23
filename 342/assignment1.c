@@ -20,8 +20,7 @@ int partition(int *a, int low, int high) {
   // compare them with the pivot
   for (int j = low; j < high; j++) {
     if (a[j] <= pivot) {
-      // if element smaller than pivot is found
-      // swap it with the greater element pointed by i
+      // if element smaller than pivot is found swap it with the greater element pointed by i
       i++;
 
       // swap element at i with element at j
@@ -61,17 +60,17 @@ void merge(int a[], int l, int m, int r) {
   int n1 = m - l + 1;
   int n2 = r - m;
 
-  /* create temp arrays */
+  // create temp arrays 
   int *L = malloc(n1 * sizeof(int)); // allocate memory for left subarray
   int *R = malloc(n2 * sizeof(int)); // allocate memory for right subarray
 
-  /* Copy data to temp arrays L[] and R[] */
+  // Copy data to temp arrays L[] and R[] 
   for (i = 0; i < n1; i++)
     L[i] = a[l + i];
   for (j = 0; j < n2; j++)
     R[j] = a[m + 1 + j];
 
-  /* Merge the temp arrays back into a[l..r]*/
+  // Merge the temp arrays back into a[l..r]
   i = 0; // Initial index of first subarray
   j = 0; // Initial index of second subarray
   k = l; // Initial index of merged subarray
@@ -86,23 +85,21 @@ void merge(int a[], int l, int m, int r) {
     k++;
   }
 
-  /* Copy the remaining elements of L[], if there
-  are any */
+  // Copy the remaining elements of L[], if there are any 
   while (i < n1) {
     a[k] = L[i];
     i++;
     k++;
   }
 
-  /* Copy the remaining elements of R[], if there
-  are any */
+  // Copy the remaining elements of R[], if there are any 
   while (j < n2) {
     a[k] = R[j];
     j++;
     k++;
   }
 
-  /* Free the memory allocated for temporary arrays */
+  // Free the memory allocated for temporary arrays 
   free(L);
   free(R);
 }
