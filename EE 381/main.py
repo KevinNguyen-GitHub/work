@@ -11,12 +11,14 @@ df = pd.read_csv('Sales_01_20.csv')
 def get_mean(array):
     return sum(array) / len(array)
 
+
 # Calculate Std
 def get_std(array):
     mean_value = sum(array) / len(array)
     variance = sum((x - mean_value) ** 2 for x in array) / (len(array) - 1)
     stdev = sqrt(variance)
     return stdev
+
 
 # Calculate the mean and standard deviation of sale prices for each year
 years = np.unique(df['Year'])
