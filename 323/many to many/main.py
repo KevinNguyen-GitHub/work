@@ -13,7 +13,7 @@ from Student import Student
 from StudentMajor import StudentMajor
 from Option import Option
 from Menu import Menu
-
+from Section import Section
 
 def add(sess: Session):
     add_action: str = ''
@@ -151,6 +151,21 @@ def add_student(session: Session):
     session.add(new_student)
 
 
+def add_student_to_section(session):
+    # Allow the user to add a Student to a Section
+    student = select_student(session)
+    section = select_section(session)
+
+    # Validate that the student is not already enrolled in the section
+    if section in student.sections:
+        print(
+            f"{student.first_name} {student.last_name} is already enrolled in Section {section.number} of {section.course.name}.")
+    else:
+        student.enroll(section)
+        session.commit()
+        print(
+            f"{student.first_name} {student.last_name} has been enrolled in Section {section.number} of {section.course.name}.")
+
 def add_student_major(sess):
     student: Student = select_student(sess)
     major: Major = select_major(sess)
@@ -285,6 +300,20 @@ def select_major(sess) -> Major:
     return major
 
 
+def select_section(session):
+    # Prompt the user to select a section
+    section_number = input("Enter the section number: ")
+
+    # Query the database to find the section with the given section number
+    section = session.query(Section).filter(Section.number == section_number).first()
+
+    if section:
+        return section
+    else:
+        print(f"Section with number {section_number} not found.")
+        return None
+
+
 def delete_student(session: Session):
     """
     Prompt the user for a student to delete and delete them.
@@ -338,6 +367,22 @@ def delete_major_student(sess):
     major: Major = select_major(sess)
     student: Student = select_student(sess)
     major.remove_student(student)
+
+
+def delete_student_from_section(session):
+    # Allow the user to remove a Student from a Section
+    student = select_student(session)
+    section = select_section(session)
+
+    # Validate that the student is enrolled in the section
+    if section in student.sections:
+        student.unenroll(section)
+        session.commit()
+        print(
+            f"{student.first_name} {student.last_name} has been unenrolled from Section {section.number} of {section.course.name}.")
+    else:
+        print(
+            f"{student.first_name} {student.last_name} is not enrolled in Section {section.number} of {section.course.name}.")
 
 
 def list_department(session: Session):
@@ -494,6 +539,19 @@ def list_department_courses(sess):
     for dept_course in dept_courses:
         print(dept_course)
 
+
+def list_student_enrollments(session):
+    # Select the student and list the sections they are enrolled in
+    student = select_student(session)
+
+    # Fetch the list of sections the student is enrolled in
+    enrollments = student.sections
+    if enrollments:
+        print(f"Sections enrolled by {student.first_name} {student.last_name} ({student.email}):")
+        for section in enrollments:
+            print(f"- Section {section.number} ({section.course.name})")
+    else:
+        print(f"{student.first_name} {student.last_name} is not enrolled in any sections.")
 
 def boilerplate(sess):
     """

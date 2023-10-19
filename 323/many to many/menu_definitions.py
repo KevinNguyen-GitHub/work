@@ -1,16 +1,7 @@
+# Import required modules
 from Menu import Menu
 from Option import Option
 from constants import *
-"""
-This little file just has the menus declared.  Each variable (e.g. menu_main) has 
-its own set of options and actions.  Although, you'll see that the "action" could
-be something other than an operation to perform.
-
-Doing the menu declarations here seemed like a cleaner way to define them.  When
-this is imported in main.py, these assignment statements are executed and the 
-variables are constructed.  To be honest, I'm not sure whether these are global
-variables or not in Python.
-"""
 
 # The main options for operating on Departments and Courses.
 menu_main = Menu('main', 'Please select one of the following options:', [
@@ -20,9 +11,19 @@ menu_main = Menu('main', 'Please select one of the following options:', [
     Option("Boilerplate Data", "boilerplate(sess)"),
     Option("Commit", "sess.commit()"),
     Option("Rollback", "session_rollback(sess)"),
+    Option("Manage Enrollments", "manage_enrollments"),  # Add Enrollment management option
     Option("Exit this application", "pass")
 ])
 
+# Add options for managing enrollments
+enroll_menu = Menu('enrollment', 'Enrollment Options:', [
+    Option("Enroll Student in Section", "enroll_student_in_section"),
+    Option("Unenroll Student from Section", "unenroll_student_from_section"),
+    Option("List Enrollments by Student", "list_enrollments_by_student"),
+    Option("List Enrollments by Section", "list_enrollments_by_section")
+])
+
+# The menu for adding new records.
 add_menu = Menu('add', 'Please indicate what you want to add:', [
     Option("Department", "add_department(sess)"),
     Option("Course", "add_course(sess)"),
@@ -33,6 +34,7 @@ add_menu = Menu('add', 'Please indicate what you want to add:', [
     Option("Exit", "pass")
 ])
 
+# The menu for deleting records.
 delete_menu = Menu('delete', 'Please indicate what you want to delete from:', [
     Option("Department", "delete_department(sess)"),
     Option("Course", "delete_course(sess)"),
@@ -43,6 +45,7 @@ delete_menu = Menu('delete', 'Please indicate what you want to delete from:', [
     Option("Exit", "pass")
 ])
 
+# The menu for listing records.
 list_menu = Menu('list', 'Please indicate what you want to list:', [
     Option("Department", "list_department(sess)"),
     Option("Course", "list_course(sess)"),
@@ -53,16 +56,16 @@ list_menu = Menu('list', 'Please indicate what you want to list:', [
     Option("Exit", "pass")
 ])
 
-# A menu to prompt for the amount of logging information to go to the console.
+# The menu to select the debug level.
 debug_select = Menu('debug select', 'Please select a debug level:', [
     Option("Informational", "logging.INFO"),
     Option("Debug", "logging.DEBUG"),
     Option("Error", "logging.ERROR")
 ])
 
-# A menu to prompt for whether to create new tables or reuse the old ones.
-introspection_select = Menu("introspection selectt", 'To introspect or not:', [
+# The menu to select whether to create new tables or reuse existing ones.
+introspection_select = Menu("introspection select", 'To introspect or not:', [
     Option('Start all over', START_OVER),
-#   Option("Reuse tables", INTROSPECT_TABLES),
+    Option("Reuse tables", INTROSPECT_TABLES),
     Option("Reuse without introspection", REUSE_NO_INTROSPECTION)
 ])
