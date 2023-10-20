@@ -1,32 +1,35 @@
+from orm_base import Base
 from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
-from your_module import Base  # Import your models
 
 class Enrollment(Base):
     __tablename__ = 'enrollments'
-
-    student_id = Column(Integer, ForeignKey('students.id'), primary_key=True)
+    student_id = Column(Integer, ForeignKey('students.student_id'), primary_key=True)
     section_id = Column(Integer, ForeignKey('sections.id'), primary_key=True)
-
-    # Define a reference to the Student and Section models
     student = relationship('Student', back_populates='enrollments')
     section = relationship('Section', back_populates='enrollments')
 
-# In the Student and Section models, add the back_populates attribute for the enrollments relationship
-class Student(Base):
-    __tablename__ = 'students'
+    def __init__(self, student, section):
+        self.student = student
+        self.section = section
 
-    id = Column(Integer, primary_key=True)
-    # Other student attributes
+    def enroll_student_in_section(self, student, section):
+        if student not in self.student and section not in self.section:
+            self.student.append(student)
+            self.section.append(section)
 
-    # Define the relationship with Enrollment
-    enrollments = relationship('Enrollment', back_populates='student')
+    def unenroll_student_from_section(self, student, section):
+        if student in self.student and section in self.section:
+            self.student.remove(student)
+            self.section.remove(section)
 
-class Section(Base):
-    __tablename__ = 'sections'
+    def list_students_in_section(self, section):
+        students_in_section = [student for student, sec in zip(self.student, self.section) if sec == section]
+        return students_in_section
 
-    id = Column(Integer, primary_key=True)
-    # Other section attributes
+    def list_sections_for_student(self, student):
+        sections_for_student = [sec for stu, sec in zip(self.student, self.section) if stu == student]
+        return sections_for_student
 
-    # Define the relationship with Enrollment
-    enrollments = relationship('Enrollment', back_populates='section')
+    def __str__(self):
+        return f"Enrollment: Student ID - {self.student_id}, Section Number - {self.section_id}"

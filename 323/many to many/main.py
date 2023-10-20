@@ -1,9 +1,15 @@
 import logging
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
 from constants import *
 from menu_definitions import menu_main, add_menu, delete_menu, list_menu, debug_select, introspection_select
 from IntrospectionFactory import IntrospectionFactory
 from db_connection import engine, Session
 from orm_base import metadata
+from sqlalchemy.exc import IntegrityError
+
 # Note that until you import your SQLAlchemy declarative classes, such as Student, Python
 # will not execute that code, and SQLAlchemy will be unaware of the mapped table.
 from Department import Department
@@ -14,28 +20,7 @@ from StudentMajor import StudentMajor
 from Option import Option
 from Menu import Menu
 from Section import Section
-
-def add(sess: Session):
-    add_action: str = ''
-    while add_action != add_menu.last_action():
-        add_action = add_menu.menu_prompt()
-        exec(add_action)
-
-
-def delete(sess: Session):
-    delete_action: str = ''
-    while delete_action != delete_menu.last_action():
-        delete_action = delete_menu.menu_prompt()
-        exec(delete_action)
-
-
-def list_objects(sess: Session):
-    list_action: str = ''
-    while list_action != list_menu.last_action():
-        list_action = list_menu.menu_prompt()
-        exec(list_action)
-
-
+from Enrollment import Enrollment
 def add_department(session: Session):
     """
     Prompt the user for the information for a new department and validate
@@ -150,21 +135,29 @@ def add_student(session: Session):
     new_student = Student(last_name, first_name, email)
     session.add(new_student)
 
+def add_section(sess: Session):
+    """Prompt the user for the information to add a new section."""
+    course = select_course(sess)
+    section_number = input("Section number: ")
+    section = Section(course, section_number)
+    sess.add(section)
+
 
 def add_student_to_section(session):
-    # Allow the user to add a Student to a Section
     student = select_student(session)
     section = select_section(session)
 
-    # Validate that the student is not already enrolled in the section
+    # Check if the student is already enrolled in the section
     if section in student.sections:
         print(
             f"{student.first_name} {student.last_name} is already enrolled in Section {section.number} of {section.course.name}.")
     else:
-        student.enroll(section)
+        enrollment = Enrollment(student=student, section=section)
+        session.add(enrollment)
         session.commit()
         print(
             f"{student.first_name} {student.last_name} has been enrolled in Section {section.number} of {section.course.name}.")
+
 
 def add_student_major(sess):
     student: Student = select_student(sess)
@@ -368,18 +361,27 @@ def delete_major_student(sess):
     student: Student = select_student(sess)
     major.remove_student(student)
 
+def delete_section(sess: Session):
+    """Prompt the user to select and delete a section."""
+    section = select_section(sess)
+    sess.delete(section)
 
-def delete_student_from_section(session):
-    # Allow the user to remove a Student from a Section
+
+def remove_student_from_section(session):
     student = select_student(session)
     section = select_section(session)
 
-    # Validate that the student is enrolled in the section
+    # Check if the student is enrolled in the section
     if section in student.sections:
-        student.unenroll(section)
-        session.commit()
-        print(
-            f"{student.first_name} {student.last_name} has been unenrolled from Section {section.number} of {section.course.name}.")
+        enrollment = session.query(Enrollment).filter(Enrollment.student == student,
+                                                      Enrollment.section == section).first()
+        if enrollment:
+            session.delete(enrollment)
+            session.commit()
+            print(
+                f"{student.first_name} {student.last_name} has been unenrolled from Section {section.number} of {section.course.name}.")
+        else:
+            print(f"Error: Enrollment record not found.")
     else:
         print(
             f"{student.first_name} {student.last_name} is not enrolled in Section {section.number} of {section.course.name}.")
@@ -396,7 +398,6 @@ def list_department(session: Session):
     departments: [Department] = list(session.query(Department).order_by(Department.abbreviation))
     for department in departments:
         print(department)
-
 
 def list_course(sess: Session):
     """
@@ -431,6 +432,13 @@ def list_major(sess: Session):
     majors: [Major] = list(sess.query(Major).order_by(Major.departmentAbbreviation))
     for major in majors:
         print(major)
+
+
+def list_sections(sess: Session):
+    """List all sections."""
+    sections = sess.query(Section).order_by(Section.number)
+    for section in sections:
+        print(f"Section {section.number} ({section.course.name})")
 
 
 def list_student_major(sess: Session):
@@ -591,37 +599,41 @@ def session_rollback(sess):
     ])
     exec(confirm_menu.menu_prompt())
 
+def get_session_and_engine():
+    # Replace 'your_database_url' with your actual database URL
+    engine = create_engine('your_database_url')
+
+    # Create a session factory
+    Session = sessionmaker(bind=engine)
+
+    # Create a session
+    session = Session()
+
+    return session, engine
+def main():
+    session, engine = get_session_and_engine()
+
+    # Define main menu options
+    main_menu_options = [
+        Option("Add", "add(session)"),
+        Option("List", "list_objects(session)"),
+        Option("Delete", "delete(session)"),
+        Option("Boilerplate Data", "boilerplate(session)"),
+        Option("Commit", "session.commit()"),
+        Option("Rollback", "session_rollback(session)"),
+        Option("Exit this application", "pass"),
+    ]
+
+    # Create the main menu
+    main_menu = Menu('main', 'Please select one of the following options:', main_menu_options)
+
+    while True:
+        action = main_menu.menu_prompt()
+        if action == "pass":
+            break
+        else:
+            exec(action)
 
 if __name__ == '__main__':
-    print('Starting off')
-    logging.basicConfig()
-    # use the logging factory to create our first logger.
-    # for more logging messages, set the level to logging.DEBUG.
-    # logging_action will be the text string name of the logging level, for instance 'logging.INFO'
-    logging_action = debug_select.menu_prompt()
-    # eval will return the integer value of whichever logging level variable name the user selected.
-    logging.getLogger("sqlalchemy.engine").setLevel(eval(logging_action))
-    # use the logging factory to create our second logger.
-    # for more logging messages, set the level to logging.DEBUG.
-    logging.getLogger("sqlalchemy.pool").setLevel(eval(logging_action))
+    main()
 
-    # Prompt the user for whether they want to introspect the tables or create all over again.
-    introspection_mode: int = IntrospectionFactory().introspection_type
-    if introspection_mode == START_OVER:
-        print("starting over")
-        # create the SQLAlchemy structure that contains all the metadata, regardless of the introspection choice.
-        metadata.drop_all(bind=engine)  # start with a clean slate while in development
-
-        # Create whatever tables are called for by our "Entity" classes that we have imported.
-        metadata.create_all(bind=engine)
-    elif introspection_mode == REUSE_NO_INTROSPECTION:
-        print("Assuming tables match class definitions")
-
-    with Session() as sess:
-        main_action: str = ''
-        while main_action != menu_main.last_action():
-            main_action = menu_main.menu_prompt()
-            print('next action: ', main_action)
-            exec(main_action)
-        sess.commit()
-    print('Ending normally')

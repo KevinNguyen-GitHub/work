@@ -1,46 +1,33 @@
-from sqlalchemy import ForeignKey, UniqueConstraint
+from orm_base import Base
+from sqlalchemy import Column, Integer, String, UniqueConstraint, ForeignKeyConstraint
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.sql.sqltypes import String, Integer, Time, Column
-
-Base = declarative_base()
-
+from Enrollment import Enrollment
 class Section(Base):
-    __tablename__ = 'sections'
+    __tablename__ = "sections"
+    id = Column(Integer, primary_key=True)
+    number = Column(Integer, nullable=False)
+    department_abbreviation = Column(String(10), nullable=False)
+    course_number = Column(Integer, nullable=False)
+    room = Column(String(50), nullable=False)
+    course = relationship("Course", back_populates="sections")
 
-    department_abbreviation: Mapped[str] = mapped_column('department_abbreviation', String(10), nullable=False, primary_key=True)
-    course_number: Mapped[int] = mapped_column('course_number', Integer, nullable=False, primary_key=True)
-    section_number: Mapped[int] = mapped_column('section_number', Integer, nullable=False, primary_key=True)
-    semester: Mapped[str] = mapped_column('semester', String(10), nullable=False, primary_key=True)
-    section_year: Mapped[int] = mapped_column('section_year', Integer, nullable=False, primary_key=True)
-    building: Mapped[str] = mapped_column('building', String(6), nullable=False)
-    room: Mapped[int] = mapped_column('room', Integer, nullable=False)
-    schedule: Mapped[str] = mapped_column('schedule', String(6), nullable=False)
-    start_time: Mapped[Time] = mapped_column('start_time', Time, nullable=False)
-    instructor: Mapped[str] = mapped_column('instructor', String(80), nullable=False)
+    enrollments = relationship('Enrollment', back_populates='section')
 
-    # Define the relationship to Course
-    course: Mapped["Course"] = relationship('Course', back_populates='sections')
-
-    # Uniqueness constraints
     __table_args__ = (
-        PrimaryKeyConstraint('department_abbreviation', 'course_number', 'section_number', 'semester', 'section_year', name='pk_01'),
-        UniqueConstraint('semester', 'section_year', 'schedule', 'start_time', 'building', 'room', name='uk_01'),
-        UniqueConstraint('semester', 'schedule', 'start_time', 'instructor', name='uk_02'),
+        UniqueConstraint('number', 'department_abbreviation', 'course_number', name='sections_uk_01'),
+        ForeignKeyConstraint(["department_abbreviation", "course_number"], ["courses.department_abbreviation", "courses.course_number"])
     )
 
-    def __init__(self, department_abbreviation, course_number, section_number, semester, section_year, building, room, schedule, start_time, instructor, course):
+    def __init__(self, number: int, department_abbreviation: str, course_number: int, room: str = None):
+        self.number = number
         self.department_abbreviation = department_abbreviation
         self.course_number = course_number
-        self.section_number = section_number
-        self.semester = semester
-        self.section_year = section_year
-        self.building = building
         self.room = room
-        self.schedule = schedule
-        self.start_time = start_time
-        self.instructor = instructor
+
+    def set_course(self, course):
         self.course = course
+        self.department_abbreviation = course.department_abbreviation
+        self.course_number = course.course_number
 
     def __str__(self):
-        return f"Section {self.department_abbreviation} {self.course_number}-{self.section_number}, Semester: {self.semester} {self.section_year}, Location: {self.building} Room {self.room}, Schedule: {self.schedule} {self.start_time}, Instructor: {self.instructor}"
+        return f"Section number: {self.number}, Department Abbreviation: {self.department_abbreviation}, Course Number: {self.course_number}, Room: {self.room}"
