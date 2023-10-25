@@ -160,14 +160,22 @@ def add_department(db):
     while True:
         name = input("Department Name: ")
         if len(name) <= 50:
-            break
+            # Check if the department with the same name already exists
+            if db.departments.find_one({"name": name}):
+                print(f"Department '{name}' already exists. Please enter a different name.")
+            else:
+                break
         else:
             print("Department Name must be 50 characters or less.")
 
     while True:
         abbreviation = input("Abbreviation: ")
         if len(abbreviation) <= 6:
-            break
+            # Check if a department with the same abbreviation already exists
+            if db.departments.find_one({"abbreviation": abbreviation}):
+                print(f"Department with abbreviation '{abbreviation}' already exists. Please enter a different abbreviation.")
+            else:
+                break
         else:
             print("Abbreviation must be 6 characters or less.")
 
@@ -189,7 +197,11 @@ def add_department(db):
         try:
             office = int(input("Office: "))
             if 1 <= office <= 1000:  # Adjust the range as needed
-                break
+                # Check if a department with the same building and office already exists
+                if db.departments.find_one({"building": building, "office": office}):
+                    print(f"Another department already occupies the same room. Please enter a different office.")
+                else:
+                    break
             else:
                 print("Office must be between 1 and 1000.")
         except ValueError:
@@ -198,7 +210,11 @@ def add_department(db):
     while True:
         description = input("Description: ")
         if len(description) <= 80:
-            break
+            # Check if a department with the same description already exists
+            if db.departments.find_one({"description": description}):
+                print(f"Department with the same description already exists. Please enter a different description.")
+            else:
+                break
         else:
             print("Description must be 80 characters or less.")
 
@@ -242,6 +258,36 @@ def list_department(db):
     for department in departments:
         print(department)
 
+def boilerplate(db):
+    preload_departments = [
+        {
+            "name": "Computer Science",
+            "abbreviation": "CS",
+            "chair_name": "John Smith",
+            "building": "Building A",
+            "office": 101,
+            "description": "Computer Science Department",
+        },
+        {
+            "name": "Biology",
+            "abbreviation": "BIO",
+            "chair_name": "Sarah Johnson",
+            "building": "Building B",
+            "office": 201,
+            "description": "Biology Department",
+        },
+        {
+            "name": "Physics",
+            "abbreviation": "PHY",
+            "chair_name": "Robert Davis",
+            "building": "Building C",
+            "office": 301,
+            "description": "Physics Department",
+        },
+    ]
+
+    # Insert the preloaded departments into the MongoDB collection
+    db.departments.insert_many(preload_departments)
 
 if __name__ == '__main__':
     main_action: str = ''
