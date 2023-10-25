@@ -7,14 +7,14 @@ from menu_definitions import add_menu
 from menu_definitions import delete_menu
 from menu_definitions import list_menu
 
-# Define your MongoDB connection string
+# MongoDB connection string
 connection_string = "mongodb+srv://nguyenkevin828:Password@cecs-323-spring-2023.qhst2lw.mongodb.net/?retryWrites=true&w=majority"
 
 # Use the connection string to connect to MongoDB
 client = MongoClient(connection_string)
 
-# Use your desired database name
-db = client["Demonstration"]
+# Database name
+db = client["CECS-323-Spring-2023"]
 
 def add(db):
     """
@@ -152,11 +152,9 @@ def list_student(db):
     for student in students:
         pprint(student)
 
-
+# Function to add a new department
 def add_department(db):
-    # Function to add a new department
     print("Add a New Department")
-
     while True:
         name = input("Department Name: ")
         if len(name) <= 50:
@@ -232,9 +230,8 @@ def add_department(db):
     db.departments.insert_one(department)
     print("Department added successfully.")
 
-
+# Function to delete a department
 def delete_department(db):
-    # Function to delete a department
     print("Delete a Department")
     list_department(db)  # List available departments
 
@@ -249,9 +246,8 @@ def delete_department(db):
     else:
         print(f"Department '{name}' not found.")
 
-
+# Function to list all departments
 def list_department(db):
-    # Function to list all departments
     print("List of Departments")
     departments = db.departments.find().sort("name")
 
@@ -286,7 +282,6 @@ def boilerplate(db):
         },
     ]
 
-    # Insert the preloaded departments into the MongoDB collection
     db.departments.insert_many(preload_departments)
 
 if __name__ == '__main__':
