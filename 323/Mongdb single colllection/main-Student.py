@@ -152,6 +152,7 @@ def list_student(db):
     for student in students:
         pprint(student)
 
+
 # Function to add a new department
 def add_department(db):
     print("Add a New Department")
@@ -230,6 +231,7 @@ def add_department(db):
     db.departments.insert_one(department)
     print("Department added successfully.")
 
+
 # Function to delete a department
 def delete_department(db):
     print("Delete a Department")
@@ -246,6 +248,7 @@ def delete_department(db):
     else:
         print(f"Department '{name}' not found.")
 
+
 # Function to list all departments
 def list_department(db):
     print("List of Departments")
@@ -253,6 +256,7 @@ def list_department(db):
 
     for department in departments:
         print(department)
+
 
 def boilerplate(db):
     preload_departments = [
@@ -283,6 +287,7 @@ def boilerplate(db):
     ]
 
     db.departments.insert_many(preload_departments)
+
 
 if __name__ == '__main__':
     main_action: str = ''
