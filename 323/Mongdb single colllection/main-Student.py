@@ -7,6 +7,14 @@ from menu_definitions import add_menu
 from menu_definitions import delete_menu
 from menu_definitions import list_menu
 
+# Define your MongoDB connection string
+connection_string = "mongodb+srv://nguyenkevin828:Password@cecs-323-spring-2023.qhst2lw.mongodb.net/?retryWrites=true&w=majority"
+
+# Use the connection string to connect to MongoDB
+client = MongoClient(connection_string)
+
+# Use your desired database name
+db = client["Demonstration"]
 
 def add(db):
     """
@@ -145,44 +153,97 @@ def list_student(db):
         pprint(student)
 
 
-if __name__ == '__main__':
-    password: str = getpass.getpass('Mongo DB password -->')
-    username: str = input('Database username [CECS-323-Spring-2023-user] -->') or \
-                    "CECS-323-Spring-2023-user"
-    project: str = input('Mongo project name [cecs-323-spring-2023] -->') or \
-                   "CECS-323-Spring-2023"
-    hash_name: str = input('7-character database hash [puxnikb] -->') or "puxnikb"
-    cluster = f"mongodb+srv://{username}:{password}@{project}.{hash_name}.mongodb.net/?retryWrites=true&w=majority"
-    print(f"Cluster: mongodb+srv://{username}:********@{project}.{hash_name}.mongodb.net/?retryWrites=true&w=majority")
-    client = MongoClient(cluster)
-    # As a test that the connection worked, print out the database names.
-    print(client.list_database_names())
-    # db will be the way that we refer to the database from here on out.
-    db = client["Demonstration"]
-    # Print off the collections that we have available to us, again more of a test than anything.
-    print(db.list_collection_names())
-    # student is our students collection within this database.
-    # Merely referencing this collection will create it, although it won't show up in Atlas until
-    # we insert our first document into this collection.
-    students = db["students"]
-    student_count = students.count_documents({})
-    print(f"Students in the collection so far: {student_count}")
+def add_department(db):
+    # Function to add a new department
+    print("Add a New Department")
 
-    # ************************** Set up the students collection
-    students_indexes = students.index_information()
-    if 'students_last_and_first_names' in students_indexes.keys():
-        print("first and last name index present.")
+    while True:
+        name = input("Department Name: ")
+        if len(name) <= 50:
+            break
+        else:
+            print("Department Name must be 50 characters or less.")
+
+    while True:
+        abbreviation = input("Abbreviation: ")
+        if len(abbreviation) <= 6:
+            break
+        else:
+            print("Abbreviation must be 6 characters or less.")
+
+    while True:
+        chair_name = input("Chair Name: ")
+        if len(chair_name) <= 80:
+            break
+        else:
+            print("Chair Name must be 80 characters or less.")
+
+    while True:
+        building = input("Building: ")
+        if len(building) <= 10:
+            break
+        else:
+            print("Building must be 10 characters or less.")
+
+    while True:
+        try:
+            office = int(input("Office: "))
+            if 1 <= office <= 1000:  # Adjust the range as needed
+                break
+            else:
+                print("Office must be between 1 and 1000.")
+        except ValueError:
+            print("Please enter a valid integer for the office.")
+
+    while True:
+        description = input("Description: ")
+        if len(description) <= 80:
+            break
+        else:
+            print("Description must be 80 characters or less.")
+
+    # Create a department document
+    department = {
+        "name": name,
+        "abbreviation": abbreviation,
+        "chair_name": chair_name,
+        "building": building,
+        "office": office,
+        "description": description
+    }
+
+    # Insert the new department into the MongoDB collection
+    db.departments.insert_one(department)
+    print("Department added successfully.")
+
+
+def delete_department(db):
+    # Function to delete a department
+    print("Delete a Department")
+    list_department(db)  # List available departments
+
+    name = input("Enter the name of the department to delete: ")
+
+    # Check if the department exists
+    department = db.departments.find_one({"name": name})
+    if department:
+        # Delete the department
+        db.departments.delete_one({"name": name})
+        print("Department deleted successfully.")
     else:
-        # Create a single UNIQUE index on BOTH the last name and the first name.
-        students.create_index([('last_name', pymongo.ASCENDING), ('first_name', pymongo.ASCENDING)],
-                              unique=True,
-                              name="students_last_and_first_names")
-    if 'students_e_mail' in students_indexes.keys():
-        print("e-mail address index present.")
-    else:
-        # Create a UNIQUE index on just the e-mail address
-        students.create_index([('e_mail', pymongo.ASCENDING)], unique=True, name='students_e_mail')
-    pprint(students.index_information())
+        print(f"Department '{name}' not found.")
+
+
+def list_department(db):
+    # Function to list all departments
+    print("List of Departments")
+    departments = db.departments.find().sort("name")
+
+    for department in departments:
+        print(department)
+
+
+if __name__ == '__main__':
     main_action: str = ''
     while main_action != menu_main.last_action():
         main_action = menu_main.menu_prompt()
