@@ -2,7 +2,6 @@ import pymongo
 from pymongo import MongoClient
 from pprint import pprint
 import getpass
-from bson.json_util import dumps
 from menu_definitions import menu_main
 from menu_definitions import add_menu
 from menu_definitions import delete_menu
@@ -17,57 +16,53 @@ client = MongoClient(connection_string)
 # Database name
 db = client["CECS-323-Spring-2023"]
 
-db.create_collection("departments")
-
-# Define the JSON schema for the "departments" collection
+# Define the schema for the Department collection
 department_schema = {
-    "bsonType": "object",
-    "required": ["name", "abbreviation", "chair_name", "building", "office", "description"],
-    "properties": {
-        "name": {
-            "bsonType": "string",
-            "minLength": 10,
-            "maxLength": 50
-        },
-        "abbreviation": {
-            "bsonType": "string",
-            "maxLength": 6
-        },
-        "chair_name": {
-            "bsonType": "string",
-            "maxLength": 80
-        },
-        "building": {
-            "bsonType": "string",
-            "enum": ["ANAC", "CDC", "DC", "ECS", "EN2", "EN3", "EN4", "EN5", "ET", "HSCI", "NUR", "VEC"]
-        },
-        "office": {
-            "bsonType": "int",
-            "minimum": 1,
-            "maximum": 1000
-        },
-        "description": {
-            "bsonType": "string",
-            "minLength": 10,
-            "maxLength": 80
-        },
+    "$jsonSchema": {
+        "bsonType": "object",
+        "required": ["name", "abbreviation", "chair_name", "building", "description"],
+        "properties": {
+            "name": {
+                "bsonType": "string",
+                "minLength": 10,
+                "maxLength": 50
+            },
+            "abbreviation": {
+                "bsonType": "string",
+                "maxLength": 6
+            },
+            "chair_name": {
+                "bsonType": "string",
+                "maxLength": 80
+            },
+            "building": {
+                "bsonType": "string",
+                "enum": ['ANAC', 'CDC', 'DC', 'ECS', 'EN2', 'EN3', 'EN4', 'EN5', 'ET', 'HSCI', 'NUR', 'VEC']
+            },
+            "office": {
+                "bsonType": "int",
+                "minimum": 1,
+                "maximum": 1000
+            },
+            "description": {
+                "bsonType": "string",
+                "minLength": 10,
+                "maxLength": 80
+            }
+        }
     }
 }
 
-# Create the JSON schema for the "departments" collection
-db.command({
-    "collMod": "departments",
-    "validator": department_schema,
-    "validationLevel": "moderate"
-})
+# Create the "departments" collection with the schema
+db.create_collection("departments", validator=department_schema)
 
-
-
-# Create unique indexes on the specified fields
+# Add uniqueness constraints to the collection
 db.departments.create_index([("name", pymongo.ASCENDING)], unique=True)
 db.departments.create_index([("abbreviation", pymongo.ASCENDING)], unique=True)
 db.departments.create_index([("chair_name", pymongo.ASCENDING)], unique=True)
 db.departments.create_index([("building", pymongo.ASCENDING), ("office", pymongo.ASCENDING)], unique=True)
+
+
 
 def add(db):
     """
@@ -206,55 +201,54 @@ def list_student(db):
         pprint(student)
 
 
-
 # Function to add a new department
 def add_department(db):
-    while True:
-        try:
-            # Get department data from the user
-            name = input("Department Name: ")
-            abbreviation = input("Abbreviation: ")
-            chair_name = input("Chair Name: ")
-            building = input("Building: ")
+    print("Add a New Department")
 
-            # Validate and convert the "Office" input
-            while True:
-                office_input = input("Office: ")
-                try:
-                    office = int(office_input)
-                    break  # Exit the loop if conversion is successful
-                except ValueError:
-                    print("Invalid input for 'office'. Please enter a valid integer for the office.")
+    # Collect department data based on the schema
+    department_data = {}
 
-            description = input("Description: ")
-
-            # Create a department document
-            department = {
-                "name": name,
-                "abbreviation": abbreviation,
-                "chair_name": chair_name,
-                "building": building,
-                "office": office,
-                "description": description
-            }
-
-            # Insert the new department into the MongoDB collection
-            db.departments.insert_one(department)
-            print("Department added successfully.")
-            break  # Exit the loop if data is added successfully
-
-        except Exception as e:
-            error_message = str(e)
-            if 'Document failed validation' in error_message:
-                # Extract and format the validation error details
-                error_details = error_message.split("Document failed validation, full error: ")[1]
-                if "'operatorName': 'enum'" in error_details:
-                    print(
-                        "Invalid building name. Please use one of the following: ANAC, CDC, DC, ECS, EN2, EN3, EN4, EN5, ET, HSCI, NUR, VEC.")
+    for field, constraints in department_schema['$jsonSchema']['properties'].items():
+        while True:
+            try:
+                value = input(f"{field.replace('_', ' ').capitalize()}: ")
+                if constraints['bsonType'] == "string":
+                    min_length = constraints.get("minLength", 0)
+                    max_length = constraints.get("maxLength", float('inf'))
+                    if min_length <= len(value) <= max_length:
+                        department_data[field] = value
+                        break
+                    else:
+                        print(f"{field.capitalize()} must be between {min_length} and {max_length} characters.")
+                elif constraints['bsonType'] == "int":
+                    minimum = constraints.get("minimum", float('-inf'))
+                    maximum = constraints.get("maximum", float('inf'))
+                    value = int(value)
+                    if minimum <= value <= maximum:
+                        department_data[field] = value
+                        break
+                    else:
+                        print(f"{field.capitalize()} must be between {minimum} and {maximum}.")
                 else:
-                    print("An error occurred while adding the department.")
-            else:
-                print(f"An error occurred while adding the department: {e}")
+                    print(f"{field.capitalize()} does not meet the specified constraints.")
+            except ValueError:
+                print(f"Error: Invalid input for {field}. Please enter a valid value.")
+            except KeyError:
+                print(f"Error: Missing data for {field}. Please provide the required information.")
+
+    try:
+        # Insert the new department into the MongoDB collection
+        db.departments.insert_one(department_data)
+        print("Department added successfully.")
+    except pymongo.errors.DuplicateKeyError as e:
+        print(f"Error: Department with the same data already exists. Please enter unique department data.")
+        add_department(db)  # Re-prompt the user for department data
+    except Exception as e:
+        print(f"Error: {e}. Please re-enter department data.")
+        add_department(db)  # Re-prompt the user for department data
+
+
+
 
 
 # Function to delete a department
@@ -290,28 +284,31 @@ def boilerplate(db):
             "abbreviation": "CS",
             "chair_name": "John Smith",
             "building": "ECS",
-            "office": 101,
-            "description": "Computer Science Department",
+            "description": "Computer Science Department with a long description",
         },
         {
-            "name": "Biology",
+            "name": "Biology Department",
             "abbreviation": "BIO",
             "chair_name": "Sarah Johnson",
-            "building": "EN2",
-            "office": 201,
-            "description": "Biology Department",
+            "building": "CDC",
+            "description": "Biology",  #
         },
         {
-            "name": "Physics",
+            "name": "Physics Department ",
             "abbreviation": "PHY",
             "chair_name": "Robert Davis",
-            "building": "EN3",
-            "office": 301,
-            "description": "Physics Department",
+            "building": "EN2",
+            "description": "Physics Department with a very long description to exceed the constraint",
         },
     ]
 
-    db.departments.insert_many(preload_departments)
+    for department_data in preload_departments:
+        if all(field in department_data for field in department_schema['$jsonSchema']['required']):
+            # Check if the department data includes all required fields
+            db.departments.insert_one(department_data)
+        else:
+            print("Invalid department data. Make sure it includes all required fields.")
+
 
 
 if __name__ == '__main__':
