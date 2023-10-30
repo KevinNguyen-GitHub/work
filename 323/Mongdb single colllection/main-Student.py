@@ -2,6 +2,7 @@ import pymongo
 from pymongo import MongoClient
 from pprint import pprint
 import getpass
+from bson.json_util import dumps
 from menu_definitions import menu_main
 from menu_definitions import add_menu
 from menu_definitions import delete_menu
@@ -15,6 +16,58 @@ client = MongoClient(connection_string)
 
 # Database name
 db = client["CECS-323-Spring-2023"]
+
+db.create_collection("departments")
+
+# Define the JSON schema for the "departments" collection
+department_schema = {
+    "bsonType": "object",
+    "required": ["name", "abbreviation", "chair_name", "building", "office", "description"],
+    "properties": {
+        "name": {
+            "bsonType": "string",
+            "minLength": 10,
+            "maxLength": 50
+        },
+        "abbreviation": {
+            "bsonType": "string",
+            "maxLength": 6
+        },
+        "chair_name": {
+            "bsonType": "string",
+            "maxLength": 80
+        },
+        "building": {
+            "bsonType": "string",
+            "enum": ["ANAC", "CDC", "DC", "ECS", "EN2", "EN3", "EN4", "EN5", "ET", "HSCI", "NUR", "VEC"]
+        },
+        "office": {
+            "bsonType": "int",
+            "minimum": 1,
+            "maximum": 1000
+        },
+        "description": {
+            "bsonType": "string",
+            "minLength": 10,
+            "maxLength": 80
+        },
+    }
+}
+
+# Create the JSON schema for the "departments" collection
+db.command({
+    "collMod": "departments",
+    "validator": department_schema,
+    "validationLevel": "moderate"
+})
+
+
+
+# Create unique indexes on the specified fields
+db.departments.create_index([("name", pymongo.ASCENDING)], unique=True)
+db.departments.create_index([("abbreviation", pymongo.ASCENDING)], unique=True)
+db.departments.create_index([("chair_name", pymongo.ASCENDING)], unique=True)
+db.departments.create_index([("building", pymongo.ASCENDING), ("office", pymongo.ASCENDING)], unique=True)
 
 def add(db):
     """
@@ -90,7 +143,7 @@ def add_student(db):
         "e_mail": email
     }
     results = collection.insert_one(student)
-    
+
 
 def select_student(db):
     """
@@ -153,83 +206,55 @@ def list_student(db):
         pprint(student)
 
 
+
 # Function to add a new department
 def add_department(db):
-    print("Add a New Department")
-    while True:
-        name = input("Department Name: ")
-        if len(name) <= 50:
-            # Check if the department with the same name already exists
-            if db.departments.find_one({"name": name}):
-                print(f"Department '{name}' already exists. Please enter a different name.")
-            else:
-                break
-        else:
-            print("Department Name must be 50 characters or less.")
-
-    while True:
-        abbreviation = input("Abbreviation: ")
-        if len(abbreviation) <= 6:
-            # Check if a department with the same abbreviation already exists
-            if db.departments.find_one({"abbreviation": abbreviation}):
-                print(f"Department with abbreviation '{abbreviation}' already exists. Please enter a different abbreviation.")
-            else:
-                break
-        else:
-            print("Abbreviation must be 6 characters or less.")
-
-    while True:
-        chair_name = input("Chair Name: ")
-        if len(chair_name) <= 80:
-            break
-        else:
-            print("Chair Name must be 80 characters or less.")
-
-    while True:
-        building = input("Building: ")
-        if len(building) <= 10:
-            break
-        else:
-            print("Building must be 10 characters or less.")
-
     while True:
         try:
-            office = int(input("Office: "))
-            if 1 <= office <= 1000:  # Adjust the range as needed
-                # Check if a department with the same building and office already exists
-                if db.departments.find_one({"building": building, "office": office}):
-                    print(f"Another department already occupies the same room. Please enter a different office.")
+            # Get department data from the user
+            name = input("Department Name: ")
+            abbreviation = input("Abbreviation: ")
+            chair_name = input("Chair Name: ")
+            building = input("Building: ")
+
+            # Validate and convert the "Office" input
+            while True:
+                office_input = input("Office: ")
+                try:
+                    office = int(office_input)
+                    break  # Exit the loop if conversion is successful
+                except ValueError:
+                    print("Invalid input for 'office'. Please enter a valid integer for the office.")
+
+            description = input("Description: ")
+
+            # Create a department document
+            department = {
+                "name": name,
+                "abbreviation": abbreviation,
+                "chair_name": chair_name,
+                "building": building,
+                "office": office,
+                "description": description
+            }
+
+            # Insert the new department into the MongoDB collection
+            db.departments.insert_one(department)
+            print("Department added successfully.")
+            break  # Exit the loop if data is added successfully
+
+        except Exception as e:
+            error_message = str(e)
+            if 'Document failed validation' in error_message:
+                # Extract and format the validation error details
+                error_details = error_message.split("Document failed validation, full error: ")[1]
+                if "'operatorName': 'enum'" in error_details:
+                    print(
+                        "Invalid building name. Please use one of the following: ANAC, CDC, DC, ECS, EN2, EN3, EN4, EN5, ET, HSCI, NUR, VEC.")
                 else:
-                    break
+                    print("An error occurred while adding the department.")
             else:
-                print("Office must be between 1 and 1000.")
-        except ValueError:
-            print("Please enter a valid integer for the office.")
-
-    while True:
-        description = input("Description: ")
-        if len(description) <= 80:
-            # Check if a department with the same description already exists
-            if db.departments.find_one({"description": description}):
-                print(f"Department with the same description already exists. Please enter a different description.")
-            else:
-                break
-        else:
-            print("Description must be 80 characters or less.")
-
-    # Create a department document
-    department = {
-        "name": name,
-        "abbreviation": abbreviation,
-        "chair_name": chair_name,
-        "building": building,
-        "office": office,
-        "description": description
-    }
-
-    # Insert the new department into the MongoDB collection
-    db.departments.insert_one(department)
-    print("Department added successfully.")
+                print(f"An error occurred while adding the department: {e}")
 
 
 # Function to delete a department
@@ -264,7 +289,7 @@ def boilerplate(db):
             "name": "Computer Science",
             "abbreviation": "CS",
             "chair_name": "John Smith",
-            "building": "Building A",
+            "building": "ECS",
             "office": 101,
             "description": "Computer Science Department",
         },
@@ -272,7 +297,7 @@ def boilerplate(db):
             "name": "Biology",
             "abbreviation": "BIO",
             "chair_name": "Sarah Johnson",
-            "building": "Building B",
+            "building": "EN2",
             "office": 201,
             "description": "Biology Department",
         },
@@ -280,7 +305,7 @@ def boilerplate(db):
             "name": "Physics",
             "abbreviation": "PHY",
             "chair_name": "Robert Davis",
-            "building": "Building C",
+            "building": "EN3",
             "office": 301,
             "description": "Physics Department",
         },
@@ -295,4 +320,3 @@ if __name__ == '__main__':
         main_action = menu_main.menu_prompt()
         print('next action: ', main_action)
         exec(main_action)
-
