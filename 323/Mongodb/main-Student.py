@@ -284,7 +284,7 @@ def boilerplate(db):
             "abbreviation": "CS",
             "chair_name": "John Smith",
             "building": "ECS",
-            "description": "Computer Science Department with a long description",
+            "description": "Computer Science ",
         },
         {
             "name": "Biology Department",
@@ -298,7 +298,7 @@ def boilerplate(db):
             "abbreviation": "PHY",
             "chair_name": "Robert Davis",
             "building": "EN2",
-            "description": "Physics Department with a very long description to exceed the constraint",
+            "description": "Physics Department",
         },
     ]
 
