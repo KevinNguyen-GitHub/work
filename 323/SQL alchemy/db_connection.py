@@ -1,5 +1,17 @@
+"""
+To get getpass to work properly in PyCharm, you need to configure your project:
+Click on the Run Menu at the very top of your PyCharm window.
+Select the Edit Configurations menu item.
+Select the "Emulate terminal in output console" checkbox.
+This will allow getpass to display the prompt and receive your password in the console.
+"""
+import getpass
+
+# Don't forget to install the sqlalchemy package into your project.
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
+# Even though you don't import anything from the psycopg2 package, you still need
+# to install it into your SQLAlchemy project.
 
 """Small utility function whose only job is to manage the connection to the database."""
 
@@ -9,26 +21,37 @@ postgresql -        The relational database dialect.  Note that 'postgres' is no
                     supported by sqlalchemy as a name for this dialect.
 psycopg2 -          The database API employed.  It turns out that the default is psycopg2,
                     but I prefer to be explicit.  One less chance of failure.
-postgres            The ID used for logging into the database.  When you installed PostgreSQL you 
-                    automatically created a postgres account, and the installer prompted you for
-                    the password at that time.  Normally, you would create a separate user, with
-                    far fewer privileges than the postgres account, and use that to log into the
-                    database.  But I'm going to keep it simple for now.
-"postgres pwd"      The password that you gave the PostgreSQL installer.  It's the same password that
-                    you used when you set up DataGrip to access the PostgreSQL database.
-@localhost          Designates that the PostgreSQL server is hosted on the same machine as this application.
-"port"                The default port # for PostgreSQL is 5432, so that is probably what you want to have
-                    here.  But just in case you are using something else, I made this a "variable".
-postgres            The name of the database."""
-db_url = "postgresql+psycopg2://postgres:enter@localhost:5432/postgres"
+userID:password     The user credentials used for logging into the database.
+host                The name of the "machine" where PostgreSQL is running.
+                    "localhost" signifies that the PostgreSQL instance is running on the
+                    same machine where the application is running.
+port                The default port # for PostgreSQL is 5432, but I already had a
+                    database using that port, so that's why it defaults to 5433.
+database            The name of the database within this particular instance of 
+                    PostgreSQL.  Every PostgreSQL has a postgres database, but
+                    you can create additional databases as needed.  Each CECS 323
+                    section has their own database in the campus PostgreSQL instance."""
+userID: str = input('User ID [027198338]--> ') or "postgres"
+"""In order to get getpass to prompt you on the console, go to Run | Edit Configurations
+in the top menu, and check the box: 'Emulate terminal in output console'.  Otherwise,
+you will never see the prompt for the database password."""
 
-# Create the database engine that we will use for all of our work.  This does not actually connect
-# just yet, it is more like a connection prototype that we actually fire up when we create a session.
-engine = create_engine(db_url, pool_size=5, pool_recycle=3600, echo=True)
+"""If the user simply hits enter when any of these input prompts comes up, the result 
+of the input function is a null string, which evaluates to False from a Boolean 
+standpoint.  Which then means that the or with a text literal will result in that
+literal as the output from the or operator.  Sort of a ghetto way to implement a
+default, but it works.  What can I say."""
+password: str = getpass.getpass(prompt=userID + ' password--> ')
+host: str = input('hostname [CECS-Postgresql]--> ') or "localhost"
+port: str = input('port number [5432]--> ') or "5432"
+database: str = input('database [2023FallS01]--> ') or "postgres"
+# 'psycopg2' in this part of the db_url instructs SQLAlchemy that we are connecting to a PostgreSQL database.
+db_url: str = f"postgresql+psycopg2://{userID}:{password}@{host}:{port}/{database}"
+db_url_display: str = f"postgresql+psycopg2://{userID}:********@{host}:{port}/{database}"
+print("DB URL: " + db_url_display)
+engine = create_engine(db_url, pool_size=5, pool_recycle=3600, echo=False)
 
-# Create a session factory using the engine that we just defined.
 session_factory = sessionmaker(bind=engine)
-
 # I am told that this next line contributes to making the code thread safe since the
 # scoped_session returns the same Session every time it's called for any given thread.
 # I personally don't expect to try to run concurrent threads from Python using
