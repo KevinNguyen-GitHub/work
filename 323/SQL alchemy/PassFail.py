@@ -1,5 +1,5 @@
 from sqlalchemy import Date, ForeignKey
-from sqlalchemy.orm import mapped_column, Mapped
+from sqlalchemy.orm import mapped_column, Mapped, relationship
 from Enrollment import Enrollment
 
 
@@ -10,6 +10,10 @@ class PassFail(Enrollment):
                                             ForeignKey("enrollments.enrollment_id",
                                                        ondelete="CASCADE"), primary_key=True)
     applicationDate: Mapped[Date] = mapped_column('application_date', Date, nullable=False)
+
+    # Add relationship with back_populates
+    enrollment = relationship("Enrollment", back_populates="pass_fail")
+
     __mapper_args__ = {"polymorphic_identity": "pass_fail"}
 
     def __init__(self, section, student, application_date: Date):

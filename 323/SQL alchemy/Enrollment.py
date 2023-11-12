@@ -1,7 +1,6 @@
 from orm_base import Base
-from sqlalchemy import String, ForeignKeyConstraint, ForeignKey, Integer, Identity, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Identity, UniqueConstraint, ForeignKeyConstraint, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 
 # Note that I do NOT migrate in any other classes in Enrollment.  I had to do that
 # to avoid a cyclic import situation where Section imports Enrollment and Enrollment
@@ -35,6 +34,11 @@ class Enrollment(Base):
     studentID: Mapped[int] = mapped_column("student_id", ForeignKey("students.student_id"),
                                            nullable=False)
     type: Mapped[str] = mapped_column("type", String(50), nullable=False)
+
+    # Add relationships with cascade option
+    letter_grade = relationship("LetterGrade", back_populates="enrollment", cascade="all, delete-orphan", uselist=False)
+    pass_fail = relationship("PassFail", back_populates="enrollment", cascade="all, delete-orphan", uselist=False)
+
     # You'll notice that the elements in the two lists for the foreign key constraint are
     # all strings.  Normally we would put a list of the migrated OO attributes in the
     # first list, and in the second list you would call out Parent.primary_key_attribute

@@ -4,6 +4,7 @@ from menu_definitions import menu_main, add_menu, delete_menu, list_menu, semest
 from IntrospectionFactory import IntrospectionFactory
 from db_connection import engine, Session
 from orm_base import metadata
+from sqlalchemy.orm import joinedload
 # Note that until you import your SQLAlchemy declarative classes, such as Student, Python
 # will not execute that code, and SQLAlchemy will be unaware of the mapped table.
 from Department import Department
@@ -77,7 +78,8 @@ def add_department(session: Session):
         building = input("Department building--> ")
         office = int(input("Department office#--> "))
 
-        building_office_count = session.query(Department).filter(Department.building == building, Department.office == office).count()
+        building_office_count = session.query(Department).filter(Department.building == building,
+                                                                 Department.office == office).count()
         unique_building_office = building_office_count == 0
         if not unique_building_office:
             print("We already have a department with that building and office. Try again.")
@@ -91,7 +93,7 @@ def add_department(session: Session):
 
     newDepartment = Department(name, abbreviation, chairName, building, office, description)
     session.add(newDepartment)
-    
+
 
 def add_course(session: Session):
     """
@@ -368,7 +370,6 @@ def add_student_LetterGrade(sess):
     sess.flush()
 
 
-
 def add_major_student(sess):
     major: Major = select_major(sess)
     student: Student = select_student(sess)
@@ -515,7 +516,7 @@ def delete_student(session: Session):
     """
     print("deleting a student")
     student: Student = select_student(session)
-    #query enrollment table, if there is a student ID that means that it is enrolled in section
+    # query enrollment table, if there is a student ID that means that it is enrolled in section
     enrollments: int = session.query(Enrollment).filter(Enrollment.studentId == student.studentID).count()
     if enrollments > 0:
         print(f"Sorry, there are {enrollments} sections that student belongs to.  Delete them first, "
@@ -557,16 +558,16 @@ def delete_course(session: Session):
 
 
 def delete_section(session: Session):
-
     print("deleting a section")
     section: Section = select_section(session)
-    #query enrollment table, if there is a section that means there has to be a student enrolled in it
-    #because enrollment needs a student id for primary key
-    enrollments: int = session.query(Enrollment).filter(Enrollment.departmentAbbreviation == section.departmentAbbreviation,
-                                               Enrollment.courseNumber == section.courseNumber,
-                                               Enrollment.sectionYear == section.sectionYear,
-                                               Enrollment.semester == section.semester,
-                                               Enrollment.sectionNumber == section.sectionNumber).count()
+    # query enrollment table, if there is a section that means there has to be a student enrolled in it
+    # because enrollment needs a student id for primary key
+    enrollments: int = session.query(Enrollment).filter(
+        Enrollment.departmentAbbreviation == section.departmentAbbreviation,
+        Enrollment.courseNumber == section.courseNumber,
+        Enrollment.sectionYear == section.sectionYear,
+        Enrollment.semester == section.semester,
+        Enrollment.sectionNumber == section.sectionNumber).count()
     if enrollments > 0:
         print(f"Sorry, there are {enrollments} students in that section.  Delete them first, "
               "then come back here to delete the section.")
@@ -598,48 +599,119 @@ def delete_major_student(sess):
 
 def delete_student_section(sess):
     """Remove a student from a particular class.
-    :param sess:    The current database session.
-    :return:        None
+    :param sess: The current database session.
+    :return: None
     """
     print("Prompting you for the student and the section that they no longer have.")
+
+    # Fetch student and section using select_student and select_section functions
     student: Student = select_student(sess)
     section: Section = select_section(sess)
 
-    enrollment: Enrollment = sess.query(Enrollment).filter(Enrollment.studentID == student.studentID,
-                                               Enrollment.departmentAbbreviation == section.departmentAbbreviation,
-                                               Enrollment.courseNumber == section.courseNumber,
-                                               Enrollment.sectionYear == section.sectionYear,
-                                               Enrollment.semester == section.semester,
-                                               Enrollment.sectionNumber == section.sectionNumber).first()
-
-    if not enrollment:
-        print(f"Sorry, that student is not in that section.")
-
+    if not student or not section:
+        print("Student or Section not found. Please check your input.")
     else:
-        student.remove_section(section)
+        # Find the enrollment
+        enrollment = sess.query(Enrollment).filter(
+            Enrollment.studentID == student.studentID,
+            Enrollment.departmentAbbreviation == section.departmentAbbreviation,
+            Enrollment.courseNumber == section.courseNumber,
+            Enrollment.sectionYear == section.sectionYear,
+            Enrollment.semester == section.semester,
+            Enrollment.sectionNumber == section.sectionNumber
+        ).first()
 
+        if not enrollment:
+            print(f"{student} is not enrolled in {section}.")
+        else:
+            try:
+                # Delete associated LetterGrade
+                if enrollment.letter_grade:
+                    sess.delete(enrollment.letter_grade)
 
+                # Delete associated PassFail
+                if enrollment.pass_fail:
+                    # Manually delete PassFail instance before deleting the enrollment
+                    pass_fail_instance = enrollment.pass_fail
+                    enrollment.pass_fail = None  # Break the circular reference
+                    sess.delete(pass_fail_instance)
+
+                # Delete the enrollment
+                sess.delete(enrollment)
+                print(f"Successfully removed {student} from {section}")
+
+                # Commit the changes to the database
+                sess.commit()
+
+                # Detach objects from the session
+                sess.expunge_all()
+
+                # List enrollments to verify the deletion
+                list_enrollment(sess)
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                # Rollback changes in case of an exception
+                sess.rollback()
 
 
 def delete_section_student(sess):
     """Remove a student from a particular class.
-    :param sess:    The current database session.
-    :return:        None
+    :param sess: The current database session.
+    :return: None
     """
-    print("Prompting you for the section and the student who no longer has that section.")
-    section: Section = select_section(sess)
-    student: Student = select_student(sess)
-    n_sections = sess.query(Enrollment).filter(Enrollment.studentID == student.studentID,
-                                               Enrollment.departmentAbbreviation == section.departmentAbbreviation,
-                                               Enrollment.courseNumber == section.courseNumber,
-                                               Enrollment.sectionYear == section.sectionYear,
-                                               Enrollment.semester == section.semester,
-                                               Enrollment.sectionNumber == section.sectionNumber).count()
-    if n_sections == 1:
-        section.remove_student(student)
+    print("Prompting you for the student and the section that they no longer have.")
 
+    # Fetch student and section using select_student and select_section functions
+    student: Student = select_student(sess)
+    section: Section = select_section(sess)
+
+    if not student or not section:
+        print("Student or Section not found. Please check your input.")
     else:
-        print(f"Sorry, that section does not have that student.")
+        # Find the enrollment
+        enrollment = sess.query(Enrollment).filter(
+            Enrollment.studentID == student.studentID,
+            Enrollment.departmentAbbreviation == section.departmentAbbreviation,
+            Enrollment.courseNumber == section.courseNumber,
+            Enrollment.sectionYear == section.sectionYear,
+            Enrollment.semester == section.semester,
+            Enrollment.sectionNumber == section.sectionNumber
+        ).first()
+
+        if not enrollment:
+            print(f"{student} is not enrolled in {section}.")
+        else:
+            try:
+                # Delete associated LetterGrade
+                if enrollment.letter_grade:
+                    sess.delete(enrollment.letter_grade)
+
+                # Delete associated PassFail
+                if enrollment.pass_fail:
+                    # Manually delete PassFail instance before deleting the enrollment
+                    pass_fail_instance = enrollment.pass_fail
+                    enrollment.pass_fail = None  # Break the circular reference
+                    sess.delete(pass_fail_instance)
+
+                # Delete the enrollment
+                sess.delete(enrollment)
+
+                print(f"Successfully removed {student} from {section}")
+
+                # Commit the changes to the database
+                sess.commit()
+
+                # Detach objects from the session
+                sess.expunge_all()
+
+                # List enrollments to verify the deletion
+                list_enrollment(sess)
+
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
+                # Rollback changes in case of an exception
+                sess.rollback()
 
 
 def list_department(session: Session):
@@ -794,17 +866,22 @@ def list_enrollment(sess: Session):
     """
     List out all enrollment records sorted by department, course,
     section number.
+
     :param sess:    The current connection.
     :return:        None
     """
-    recs = sess.query(Enrollment).order_by(Enrollment.departmentAbbreviation,
-                                           Enrollment.courseNumber,
-                                           Enrollment.sectionYear).all()
+    sess.expire_all()
 
+    recs = sess.query(Enrollment). \
+        order_by(Enrollment.departmentAbbreviation, Enrollment.courseNumber, Enrollment.sectionYear).all()
 
-#Validate that the list_enrollment method works on LetterGrade Enrollment instances as well as PassFail instances of Enrollment
-    for rec in recs:
-        print(rec)
+    for enrollment in recs:
+        if isinstance(enrollment, LetterGrade):
+            print(f"LetterGrade Enrollment: {enrollment}, Min Acceptable: {enrollment.minAcceptable}")
+        elif isinstance(enrollment, PassFail):
+            print(f"PassFail Enrollment: {enrollment}, Application Date: {enrollment.applicationDate}")
+        else:
+            print(f"Enrollment: {enrollment}")
 
 
 def move_course_to_new_department(sess: Session):
@@ -887,27 +964,36 @@ def list_department_courses(sess):
 
 
 def boilerplate(sess):
-    """
-    Add boilerplate data initially to jump start the testing.  Remember that there is no
-    checking of this data, so only run this option once from the console, or you will
-    get a uniqueness constraint violation from the database.
-    :param sess:    The session that's open.
-    :return:        None
-    """
-    department: Department = Department('CECS', 'Computer Engineering Computer Science')
-    major1: Major = Major(department, 'Computer Science', 'Fun with blinking lights')
-    major2: Major = Major(department, 'Computer Engineering', 'Much closer to the silicon')
-    student1: Student = Student('Brown', 'David', 'david.brown@gmail.com')
-    student2: Student = Student('Brown', 'Mary', 'marydenni.brown@gmail.com')
-    student3: Student = Student('Disposable', 'Bandit', 'disposable.bandit@gmail.com')
+    # Add boilerplate data initially to jump start the testing.
+    # Remember that there is no checking of this data, so only run this option once from the console,
+    # or you will get a uniqueness constraint violation from the database.
+
+    department = Department(name='Computer Engineering Computer Science',
+                            abbreviation='CECS',
+                            chairName='Chairman',
+                            building='Building1',
+                            office=101,
+                            description='Description of the department')
+
+    major1 = Major(department, 'Computer Science', 'Fun with blinking lights')
+    major2 = Major(department, 'Computer Engineering', 'Much closer to the silicon')
+
+    student1 = Student(lastName='Brown', firstName='David', email='david.brown@gmail.com')
+    student2 = Student(lastName='Brown', firstName='Mary', email='marydenni.brown@gmail.com')
+    student3 = Student(lastName='Doe', firstName='John', email='disposable.bandit@gmail.com')
+
     student1.add_major(major1)
     student2.add_major(major1)
     student2.add_major(major2)
-    course1: Course = Course(department, 323, "Database Design Fundamentals",
-                             "Basics of database design", 3)
-    course2: Course = Course(department, 174, "Intro to Programming",
-                             "First real programming course", 3)
-    section1: Section = Section(course1, 1, 'Fall', 2023, 'ECS', 416, 'MW', time(8, 0, 0), 'Brown')
+
+    course1 = Course(department, courseNumber=323, name='Database Design Fundamentals',
+                     description='Basics of database design', units=3)
+    course2 = Course(department, courseNumber=174, name='Intro to Programming',
+                     description='First real programming course', units=3)
+
+    section1 = Section(course1, sectionNumber=1, semester='Fall', sectionYear=2023,
+                       building='ECS', room=416, schedule='MW', startTime=time(8, 0, 0), instructor='Brown')
+
     sess.add(department)
     sess.add(course1)
     sess.add(course2)
@@ -917,8 +1003,9 @@ def boilerplate(sess):
     sess.add(student2)
     sess.add(student3)
     sess.add(section1)
-    sess.flush()  # Force SQLAlchemy to update the database, although not commit
 
+    # Flush to force SQLAlchemy to update the database
+    sess.flush()
 
 def session_rollback(sess):
     """
@@ -957,7 +1044,6 @@ if __name__ == '__main__':
         metadata.create_all(bind=engine)
     elif introspection_mode == REUSE_NO_INTROSPECTION:
         print("Assuming tables match class definitions")
-    
 
     with Session() as sess:
         main_action: str = ''
