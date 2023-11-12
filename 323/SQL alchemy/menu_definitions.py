@@ -1,6 +1,7 @@
 from Menu import Menu
 from Option import Option
 from constants import *
+
 """
 This little file just has the menus declared.  Each variable (e.g. menu_main) has 
 its own set of options and actions.  Although, you'll see that the "action" could
@@ -94,6 +95,6 @@ debug_select = Menu('debug select', 'Please select a debug level:', [
 # A menu to prompt for whether to create new tables or reuse the old ones.
 introspection_select = Menu("introspection select", 'To introspect or not:', [
     Option('Start all over', START_OVER),
-#   Option("Reuse tables", INTROSPECT_TABLES),
+    #   Option("Reuse tables", INTROSPECT_TABLES),
     Option("Reuse without introspection", REUSE_NO_INTROSPECTION)
 ])

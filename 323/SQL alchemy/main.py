@@ -1,25 +1,24 @@
 import logging
 from datetime import time, datetime
-from menu_definitions import menu_main, add_menu, delete_menu, list_menu, semester_menu, schedule_menu, debug_select
-from IntrospectionFactory import IntrospectionFactory
-from db_connection import engine, Session
-from orm_base import metadata
-from sqlalchemy.orm import joinedload
+
+from Course import Course
 # Note that until you import your SQLAlchemy declarative classes, such as Student, Python
 # will not execute that code, and SQLAlchemy will be unaware of the mapped table.
 from Department import Department
-from Course import Course
+from Enrollment import Enrollment
+from IntrospectionFactory import IntrospectionFactory
+from LetterGrade import LetterGrade
 from Major import Major
+from Menu import Menu
+from Option import Option
+from PassFail import PassFail
+from Section import Section
 from Student import Student
 from StudentMajor import StudentMajor
-from Enrollment import Enrollment
-from Section import Section
-from PassFail import PassFail
-from LetterGrade import LetterGrade
-from Option import Option
-from Menu import Menu
 from constants import *
-import IPython
+from db_connection import engine, Session
+from menu_definitions import menu_main, add_menu, delete_menu, list_menu, semester_menu, schedule_menu, debug_select
+from orm_base import metadata
 
 
 def add(sess: Session):
@@ -1006,6 +1005,7 @@ def boilerplate(sess):
 
     # Flush to force SQLAlchemy to update the database
     sess.flush()
+
 
 def session_rollback(sess):
     """

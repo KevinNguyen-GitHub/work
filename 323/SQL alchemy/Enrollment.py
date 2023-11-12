@@ -1,6 +1,8 @@
-from orm_base import Base
-from sqlalchemy import Column, Integer, String, Identity, UniqueConstraint, ForeignKeyConstraint, ForeignKey
+from sqlalchemy import Integer, String, Identity, UniqueConstraint, ForeignKeyConstraint, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from orm_base import Base
+
 
 # Note that I do NOT migrate in any other classes in Enrollment.  I had to do that
 # to avoid a cyclic import situation where Section imports Enrollment and Enrollment
