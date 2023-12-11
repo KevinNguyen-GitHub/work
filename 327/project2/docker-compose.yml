@@ -1,0 +1,29 @@
+version: '3'
+services:
+  mosquitto:
+    image: eclipse-mosquitto
+    ports:
+      - "1883:1883"  # Standard MQTT port
+      - "8883:8883"  # MQTT over TLS port
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./ssl:/mosquitto/ssl
+    restart: always
+
+  edge:
+    build:
+      context: .
+      dockerfile: Dockerfile-edge
+    container_name: edge-container
+    restart: always
+    depends_on:
+      - mosquitto
+
+  centralized:
+    build:
+      context: .
+      dockerfile: Dockerfile-central
+    container_name: central-container
+    restart: always
+    depends_on:
+      - mosquitto

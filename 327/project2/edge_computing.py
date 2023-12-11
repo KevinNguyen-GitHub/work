@@ -47,10 +47,12 @@ def process_data(data):
 
 
 client = mqtt.Client()
-client.tls_set(ca_certs="ca.crt", certfile="client.crt", keyfile="client.key",
+client.tls_set(ca_certs="/ssl/ca.crt",
+               certfile="/ssl/client.crt",
+               keyfile="/ssl/client.key",
                tls_version=ssl.PROTOCOL_TLSv1_2)
 client.on_connect = on_connect
-client.connect("mqtt_broker_address", 8883, 60)  # TLS port
+client.connect("mosquitto", 8883, 60)  # TLS port
 
 client.loop_start()
 
