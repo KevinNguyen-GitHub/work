@@ -4,10 +4,10 @@ services:
     image: eclipse-mosquitto
     ports:
       - "1883:1883"  # Standard MQTT port
-      - "8883:8883"  # MQTT over TLS port
     volumes:
       - ./mosquitto/config:/mosquitto/config
-      - ./ssl:/mosquitto/ssl
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
     restart: always
 
   edge:
