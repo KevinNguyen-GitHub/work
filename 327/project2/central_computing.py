@@ -1,7 +1,6 @@
 import json
 import logging
 import time
-
 import numpy as np
 import paho.mqtt.client as mqtt
 
@@ -83,7 +82,7 @@ except Exception as e:
 
 try:
     while True:
-        time.sleep(1)  # Keep the main thread alive.
+        time.sleep(1)
 except KeyboardInterrupt:
     logging.info("Stopping MQTT client")
     client.loop_stop()

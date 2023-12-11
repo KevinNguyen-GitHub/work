@@ -22,14 +22,13 @@ def on_message(client, userdata, msg):
 
 
 def generate_data(num_readings=1000):
-    # Simulating the generation of multiple readings for each metric
     temperature_readings = np.random.uniform(25.0, 30.0, num_readings).tolist()
     humidity_readings = np.random.uniform(45.0, 55.0, num_readings).tolist()
     pressure_readings = np.random.uniform(950.0, 1050.0, num_readings).tolist()
     wind_speed_readings = np.random.uniform(0.0, 20.0, num_readings).tolist()
     light_intensity_readings = np.random.uniform(0.0, 1000.0, num_readings).tolist()
 
-    additional_complex_data = [
+    complex_data = [
         {'timestamp': i, 'value': np.random.random()}
         for i in range(num_readings)
     ]
@@ -41,7 +40,7 @@ def generate_data(num_readings=1000):
         'pressure': pressure_readings,
         'wind_speed': wind_speed_readings,
         'light_intensity': light_intensity_readings,
-        'additional_data': additional_complex_data
+        'additional_data': complex_data
     }
 
 

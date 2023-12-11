@@ -1,0 +1,10 @@
+How to run the code
+
+Required Applications:
+    Docker
+
+Insturctions:
+1) docker-compose build - create the dockers
+2) docker-compose up - run the dockers
+3) crtl+ c - to end the program
+4) docker - compose down to remove the dockers
