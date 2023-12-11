@@ -1,0 +1,16 @@
+version: '3'
+services:
+  edge:
+    build:
+      context: .
+      dockerfile: Dockerfile-edge
+    container_name: edge-container
+    restart: always
+    depends_on:
+      - centralized
+  centralized:
+    build:
+      context: .
+      dockerfile: Dockerfile-central
+    container_name: centralized-container
+    restart: always

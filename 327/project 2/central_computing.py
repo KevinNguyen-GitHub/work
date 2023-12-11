@@ -45,7 +45,7 @@ def process_data(data):
 
 
 client = mqtt.Client()
-client.tls_set(ca_certs="path/to/ca.crt", certfile="path/to/server.crt", keyfile="path/to/server.key",
+client.tls_set(ca_certs="ca.crt", certfile="server.crt", keyfile="server.key",
                tls_version=ssl.PROTOCOL_TLSv1_2)
 client.on_connect = on_connect
 client.on_message = on_message
