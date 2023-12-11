@@ -5,16 +5,16 @@ services:
     ports:
       - "1883:1883"
     volumes:
-      - ./mosquitto/config:/mosquitto/config
-      - ./mosquitto/data:/mosquitto/data
-      - ./mosquitto/log:/mosquitto/log
+      - ./mosquitto/config:/mosquitto/config # connects to config
+      - ./mosquitto/data:/mosquitto/data # connects to data
+      - ./mosquitto/log:/mosquitto/log # connects to log
     restart: always
 
   edge:
     build:
       context: .
-      dockerfile: Dockerfile-edge
-    container_name: edge-container
+      dockerfile: Dockerfile-edge # use docker file
+    container_name: edge-container # create container
     restart: always
     depends_on:
       - mosquitto
@@ -22,8 +22,8 @@ services:
   centralized:
     build:
       context: .
-      dockerfile: Dockerfile-central
-    container_name: central-container
+      dockerfile: Dockerfile-central # use docker file
+    container_name: central-container # create container
     restart: always
     depends_on:
       - mosquitto

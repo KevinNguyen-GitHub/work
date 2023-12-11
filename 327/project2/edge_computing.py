@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 # Set up basic logging
 logging.basicConfig(level=logging.INFO)
 
-
+# shows that the docker is connected
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         logging.info("Connected with result code " + str(rc))
@@ -20,7 +20,7 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     logging.info(f"Message received: {msg.topic} {msg.payload}")
 
-
+# create the data to be processed
 def generate_data(num_readings=1000):
     temperature_readings = np.random.uniform(25.0, 30.0, num_readings).tolist()
     humidity_readings = np.random.uniform(45.0, 55.0, num_readings).tolist()
@@ -43,7 +43,7 @@ def generate_data(num_readings=1000):
         'additional_data': complex_data
     }
 
-
+# process the data
 def process_data(data):
     start_time = time.time()
     try:
@@ -53,6 +53,7 @@ def process_data(data):
         pressure = data['pressure']
         wind_speed = data['wind_speed']
         light_intensity = data['light_intensity']
+        complex_data = data['additional_data']
 
     except KeyError as e:
         logging.error(f"Missing key in data: {e}")
@@ -63,7 +64,7 @@ def process_data(data):
         processing_time = end_time - start_time
         logging.info(f"Edge Processing Time: {processing_time} seconds")
 
-
+# connects to mqtt
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
@@ -75,7 +76,7 @@ client.on_message = on_message
 
 # client.connect("mosquitto", 8883, 60)  # TLS port
 
-
+# connect to msqtt broker
 try:
     client.connect("mosquitto", 1883, 60)
     client.loop_start()
@@ -90,4 +91,4 @@ try:
         time.sleep(1)
 except KeyboardInterrupt:
     logging.info("Program interrupted, stopping MQTT client")
-    client.loop_stop()
+    client.loop_stop() # end the program
