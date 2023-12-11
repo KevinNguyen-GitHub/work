@@ -41,17 +41,6 @@ def process_data(data):
         wind_speed = data['wind_speed']
         light_intensity = data['light_intensity']
 
-        temperature_mean = np.mean(temperature)
-        humidity_mean = np.mean(humidity)
-
-        # Visualize data (line chart for temperature)
-        # plt.figure(figsize=(8, 4))
-        # plt.plot(temperature)
-        # plt.title(f'Temperature Data (Source {source_id})')
-        # plt.xlabel('Time')
-        # plt.ylabel('Temperature (°C)')
-        # plt.grid(True)
-        # plt.show()
 
     except KeyError as e:
         logging.error(f"Missing key in data: {e}")
